@@ -51,11 +51,7 @@
                     var(--blue) 70%,
                     var(--blue-dark) 100%
                 );
-            font-family:
-                "Segoe UI",
-                Arial,
-                Helvetica,
-                sans-serif;
+            font-family: "Segoe UI", Arial, Helvetica, sans-serif;
             line-height: 1.6;
         }
 
@@ -71,12 +67,8 @@
             font: inherit;
         }
 
-        img {
-            max-width: 100%;
-        }
-
         .container {
-            width: min(1180px, calc(100% - 40px));
+            width: min(var(--container), calc(100% - 40px));
             margin: 0 auto;
         }
 
@@ -159,14 +151,14 @@
             top: 0;
             z-index: 1000;
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-            background: rgba(3, 53, 111, 0.9);
+            background: rgba(3, 53, 111, 0.92);
             box-shadow: 0 12px 35px rgba(2, 31, 73, 0.18);
             backdrop-filter: blur(16px);
         }
 
         .header-content {
             display: flex;
-            min-height: 82px;
+            min-height: 88px;
             align-items: center;
             justify-content: space-between;
             gap: 25px;
@@ -175,50 +167,19 @@
         .brand {
             display: flex;
             align-items: center;
-            gap: 11px;
+            gap: 12px;
             flex-shrink: 0;
         }
 
         .brand-logo {
-            position: relative;
-            display: grid;
-            width: 54px;
-            height: 54px;
-            place-items: center;
-            overflow: hidden;
-            color: var(--navy-dark);
-            background:
-                linear-gradient(
-                    145deg,
-                    #ffffff,
-                    #aab8c0
-                );
-            border: 1px solid rgba(255, 255, 255, 0.8);
+            display: block;
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.25);
             border-radius: 14px;
             box-shadow: 0 9px 25px rgba(0, 31, 73, 0.25);
-            font-size: 1.2rem;
-            font-weight: 900;
-        }
-
-        .brand-logo span {
-            position: relative;
-            z-index: 2;
-        }
-
-        .brand-logo::after {
-            position: absolute;
-            right: -11px;
-            bottom: -18px;
-            width: 35px;
-            height: 70px;
-            content: "";
-            background:
-                linear-gradient(
-                    180deg,
-                    #119fff,
-                    #063c8e
-                );
-            transform: rotate(34deg);
         }
 
         .brand-name {
@@ -248,7 +209,7 @@
         .navigation {
             display: flex;
             align-items: center;
-            gap: 26px;
+            gap: 24px;
         }
 
         .navigation a {
@@ -324,7 +285,7 @@
 
         .hero {
             position: relative;
-            min-height: calc(100vh - 82px);
+            min-height: calc(100vh - 88px);
             display: flex;
             align-items: center;
             overflow: hidden;
@@ -346,12 +307,6 @@
                     transparent 1px
                 );
             background-size: 50px 50px;
-            mask-image:
-                linear-gradient(
-                    to bottom,
-                    black,
-                    transparent 85%
-                );
             pointer-events: none;
         }
 
@@ -369,7 +324,6 @@
             margin-bottom: 34px;
             color: var(--silver-light);
             font-size: 1.25rem;
-            text-shadow: 0 2px 10px rgba(3, 39, 87, 0.18);
         }
 
         .hero-buttons {
@@ -544,7 +498,6 @@
                     #116dc6,
                     #20d0d7
                 );
-            border: 1px solid rgba(255, 255, 255, 0.25);
             border-radius: 11px;
         }
 
@@ -585,7 +538,7 @@
             font-size: 1.5rem;
         }
 
-        /* CARDS */
+        /* SERVICES */
 
         .service-grid {
             display: grid;
@@ -616,8 +569,8 @@
 
         .service-icon {
             display: grid;
-            width: 54px;
-            height: 54px;
+            width: 58px;
+            height: 58px;
             margin-bottom: 23px;
             place-items: center;
             color: var(--navy-dark);
@@ -628,7 +581,7 @@
                     var(--silver-dark)
                 );
             border-radius: 14px;
-            font-size: 1.3rem;
+            font-size: 0.82rem;
             font-weight: 900;
         }
 
@@ -636,7 +589,7 @@
             font-size: 0.95rem;
         }
 
-        /* DEVELOPMENT AND SOCIAL */
+        /* SPLIT SECTIONS */
 
         .split-section {
             display: grid;
@@ -923,7 +876,7 @@
         @media (max-width: 1000px) {
             .navigation {
                 position: absolute;
-                top: 82px;
+                top: 88px;
                 right: 20px;
                 left: 20px;
                 display: none;
@@ -977,12 +930,25 @@
                 padding: 75px 0;
             }
 
+            .brand-logo {
+                width: 58px;
+                height: 58px;
+            }
+
             .brand-name strong {
-                font-size: 1.12rem;
+                font-size: 1.08rem;
             }
 
             .brand-name small {
-                font-size: 0.48rem;
+                font-size: 0.46rem;
+            }
+
+            .header-content {
+                min-height: 78px;
+            }
+
+            .navigation {
+                top: 78px;
             }
 
             .hero {
@@ -1044,14 +1010,18 @@
         <div class="container header-content">
 
             <a class="brand" href="#home">
-                <span class="brand-logo">
-                    <span>SF</span>
-                </span>
+
+                <img
+                    class="brand-logo"
+                    src="logo.png"
+                    alt="SilverForge Digital Solutions logo"
+                >
 
                 <span class="brand-name">
                     <strong>Silver<b>Forge</b></strong>
                     <small>Digital Solutions</small>
                 </span>
+
             </a>
 
             <button
@@ -1070,6 +1040,7 @@
                 <a href="#portfolio">Portfolio</a>
                 <a href="#about">About</a>
                 <a href="#contact">Contact</a>
+
                 <a class="quote-button" href="#contact">
                     Request a Quote
                 </a>
@@ -1079,8 +1050,6 @@
     </header>
 
     <main>
-
-        <!-- HOME -->
 
         <section class="hero" id="home">
             <div class="container hero-grid">
@@ -1103,6 +1072,7 @@
                     </p>
 
                     <div class="hero-buttons">
+
                         <a class="primary-button" href="#contact">
                             Start a Project
                         </a>
@@ -1110,8 +1080,8 @@
                         <a class="secondary-button" href="#services">
                             Explore Services
                         </a>
-                    </div>
 
+                    </div>
                 </div>
 
                 <div class="hero-visual" aria-hidden="true">
@@ -1124,6 +1094,7 @@
                         </div>
 
                         <div class="computer-content">
+
                             <div class="dashboard-chart">
                                 <div class="chart-line"></div>
                             </div>
@@ -1137,6 +1108,7 @@
                                 <span></span>
                                 <span></span>
                             </div>
+
                         </div>
                     </div>
 
@@ -1153,11 +1125,8 @@
                     </div>
 
                 </div>
-
             </div>
         </section>
-
-        <!-- SERVICES -->
 
         <section class="section section-dark" id="services">
             <div class="container">
@@ -1180,7 +1149,9 @@
 
                     <article class="service-card">
                         <div class="service-icon">APP</div>
+
                         <h3>App Development</h3>
+
                         <p>
                             Custom applications designed around your business,
                             customers and workflow.
@@ -1189,16 +1160,20 @@
 
                     <article class="service-card">
                         <div class="service-icon">WEB</div>
+
                         <h3>Website Development</h3>
+
                         <p>
-                            Responsive business websites that clearly explain
-                            what you offer and help customers contact you.
+                            Responsive business websites that explain what you
+                            offer and help customers contact you.
                         </p>
                     </article>
 
                     <article class="service-card">
                         <div class="service-icon">SOC</div>
+
                         <h3>Social Media Management</h3>
+
                         <p>
                             Account setup, posting, planning and ongoing
                             management across major social platforms.
@@ -1207,7 +1182,9 @@
 
                     <article class="service-card">
                         <div class="service-icon">ADS</div>
+
                         <h3>Content and Advertising</h3>
+
                         <p>
                             Video content, advertising graphics, keyword
                             campaigns and promotional content.
@@ -1217,8 +1194,6 @@
                 </div>
             </div>
         </section>
-
-        <!-- DEVELOPMENT -->
 
         <section class="section" id="development">
             <div class="container split-section">
@@ -1254,6 +1229,7 @@
 
                         <div class="mini-card">
                             <strong>Custom Design</strong>
+
                             <p>
                                 A design created around your business instead
                                 of a generic template.
@@ -1262,14 +1238,16 @@
 
                         <div class="mini-card">
                             <strong>Mobile Friendly</strong>
+
                             <p>
-                                Websites and interfaces that work properly
-                                across phones, tablets and computers.
+                                Websites and interfaces that work properly on
+                                phones, tablets and computers.
                             </p>
                         </div>
 
                         <div class="mini-card">
                             <strong>Focused Features</strong>
+
                             <p>
                                 We concentrate on the tools your business
                                 actually needs.
@@ -1278,6 +1256,7 @@
 
                         <div class="mini-card">
                             <strong>Room to Grow</strong>
+
                             <p>
                                 Your website or application can be expanded as
                                 your business develops.
@@ -1290,8 +1269,6 @@
             </div>
         </section>
 
-        <!-- SOCIAL MEDIA -->
-
         <section class="section section-dark" id="social-media">
             <div class="container split-section">
 
@@ -1300,6 +1277,7 @@
 
                         <div class="mini-card">
                             <strong>Account Management</strong>
+
                             <p>
                                 Regular posting, scheduling and account
                                 organization.
@@ -1308,6 +1286,7 @@
 
                         <div class="mini-card">
                             <strong>Account Creation</strong>
+
                             <p>
                                 Setup and branding for new business social
                                 media accounts.
@@ -1316,6 +1295,7 @@
 
                         <div class="mini-card">
                             <strong>Video Content</strong>
+
                             <p>
                                 Short-form and promotional videos created for
                                 social platforms.
@@ -1324,6 +1304,7 @@
 
                         <div class="mini-card">
                             <strong>Digital Advertising</strong>
+
                             <p>
                                 Keyword campaigns, advertisements and
                                 promotional graphics.
@@ -1361,12 +1342,10 @@
                         <span class="platform">YouTube</span>
                         <span class="platform">TikTok</span>
                     </div>
-                </div>
 
+                </div>
             </div>
         </section>
-
-        <!-- PORTFOLIO -->
 
         <section class="section" id="portfolio">
             <div class="container">
@@ -1395,7 +1374,7 @@
                             <h3>System Monitor</h3>
 
                             <p>
-                                A system monitoring application that displays
+                                A system monitoring application displaying
                                 battery, storage, memory, network and device
                                 information.
                             </p>
@@ -1413,8 +1392,8 @@
                             <h3>Age of Dominion Counter</h3>
 
                             <p>
-                                A multiplayer counter and match companion
-                                created for the Age of Dominion card game.
+                                A multiplayer counter and match companion for
+                                the Age of Dominion card game.
                             </p>
                         </div>
                     </article>
@@ -1439,8 +1418,6 @@
                 </div>
             </div>
         </section>
-
-        <!-- ABOUT -->
 
         <section class="section section-dark" id="about">
             <div class="container">
@@ -1489,8 +1466,6 @@
                 </div>
             </div>
         </section>
-
-        <!-- CONTACT -->
 
         <section class="section" id="contact">
             <div class="container contact-grid">
@@ -1643,23 +1618,26 @@
             event.preventDefault();
 
             /*
-             * Replace the email address below with your real business email.
+             * Replace YOUR_EMAIL_HERE with your business email.
              */
 
             const businessEmail = "YOUR_EMAIL_HERE";
 
             if (businessEmail === "YOUR_EMAIL_HERE") {
                 formMessage.textContent =
-                    "Add your business email inside the index.html contact-form code before publishing.";
+                    "Add your business email inside the index.html code before publishing.";
 
                 return;
             }
 
             const name = document.getElementById("name").value;
             const business = document.getElementById("business").value;
-            const customerEmail = document.getElementById("email").value;
-            const service = document.getElementById("service").value;
-            const message = document.getElementById("message").value;
+            const customerEmail =
+                document.getElementById("email").value;
+            const service =
+                document.getElementById("service").value;
+            const message =
+                document.getElementById("message").value;
 
             const subject =
                 "SilverForge Project Request - " + service;
