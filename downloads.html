@@ -1,267 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>Downloads - LDG Systems</title>
-  <meta name="description" content="LDG Systems downloads and release information for System Monitor, LDG Quick Tools, LDG Maps, Advanced Monitor, and future projects." />
-
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="View applications created by SilverForge Digital Solutions.">
+    <title>Our Apps | SilverForge Digital Solutions</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <header class="topbar">
-    <div class="container nav">
-      <a href="index.html" class="brand">
-        <div class="brand-mark">LDG</div>
-        <span>LDG Systems</span>
-      </a>
-
-      <button class="nav-toggle" id="navToggle" type="button" aria-label="Open navigation" aria-expanded="false">Menu</button>
-
-      <nav class="nav-links" id="navLinks">
-        <a href="index.html">Home</a>
-        <a href="about.html">About</a>
-        <a href="projects.html">Projects</a>
-        <a href="downloads.html" class="active">Downloads</a>
-        <a href="updates.html">Updates</a>
-        <a href="screenshots.html">Screenshots</a>
-        <a href="support.html">Support</a>
-        <a href="privacy.html">Privacy</a>
-        <a href="contact.html">Contact</a>
-      </nav>
-
-      <a class="nav-cta" href="downloads.html">Get Builds</a>
-    </div>
-  </header>
-
-  <main>
-    <section class="page-hero">
-      <div class="container">
-        <div class="eyebrow">LDG Systems Download Hub</div>
-        <h1>Apps, tools, and <span>release status</span></h1>
-        <p>
-          Download current LDG Systems builds, view release status, and get install information for Android and Windows projects.
-        </p>
-      </div>
-    </section>
-
-    <section>
-      <div class="container downloads-grid">
-
-        <article class="download-card">
-          <div class="download-top">
-            <div>
-              <h3>System Monitor</h3>
-              <p>
-                Android system utility focused on battery information, RAM, storage, network details, device stats, live monitoring, and warning alerts.
-              </p>
-            </div>
-            <div class="version-chip">Testing</div>
-          </div>
-
-          <div class="download-meta">
-            <div class="meta-box">
-              <small>Platform</small>
-              <strong>Android</strong>
-            </div>
-            <div class="meta-box">
-              <small>Package</small>
-              <strong>com.ldg.systemmonitor</strong>
-            </div>
-            <div class="meta-box">
-              <small>Status</small>
-              <strong>Play Testing</strong>
-            </div>
-          </div>
-
-          <div class="download-actions">
-            <a class="btn btn-secondary" href="support.html">View Support Info</a>
-          </div>
-        </article>
-
-        <article class="download-card">
-          <div class="download-top">
-            <div>
-              <h3>LDG Quick Tools</h3>
-              <p>
-                Android utility toolbox with calculator, unit converter, flashlight, stopwatch, BMI calculator, tip calculator, random number generator, text counter, tax calculator, and planned media tools.
-              </p>
-            </div>
-            <div class="version-chip">In Development</div>
-          </div>
-
-          <div class="download-meta">
-            <div class="meta-box">
-              <small>Platform</small>
-              <strong>Android</strong>
-            </div>
-            <div class="meta-box">
-              <small>Type</small>
-              <strong>Utility Tools</strong>
-            </div>
-            <div class="meta-box">
-              <small>Status</small>
-              <strong>Active Build</strong>
-            </div>
-          </div>
-
-          <div class="download-actions">
-            <a class="btn btn-secondary" href="projects.html">View Project</a>
-          </div>
-        </article>
-
-        <article class="download-card featured-download">
-          <div class="download-top">
-            <div>
-              <h3>Advanced Monitor</h3>
-              <p>
-                Windows desktop monitoring app with futuristic dashboard cards, system information, hardware details, FPS counter, network diagnostics, driver tools, outdated driver checks, and performance sections.
-              </p>
-            </div>
-            <div class="version-chip">Available</div>
-          </div>
-
-          <div class="download-meta">
-            <div class="meta-box">
-              <small>Platform</small>
-              <strong>Windows</strong>
-            </div>
-            <div class="meta-box">
-              <small>Type</small>
-              <strong>ZIP/App</strong>
-            </div>
-            <div class="meta-box">
-              <small>Status</small>
-              <strong>Download Ready</strong>
-            </div>
-          </div>
-
-          <p class="download-note">
-            Download the ZIP, extract it first, then run <strong>LDG Advanced System Monitor.exe</strong>.
-            Windows may show a warning because this build is not code-signed yet.
-          </p>
-
-          <div class="download-actions">
-            <a class="btn" href="https://drive.google.com/file/d/1cOfgT3PezAc-de_JbjhvpvJ-WHOd50Hp/view?usp=drive_link" target="_blank" rel="noopener">
-              Download Advanced Monitor
+    <header class="site-header">
+        <div class="container header-content">
+            <a class="brand" href="index.html" aria-label="SilverForge Digital Solutions home">
+                <img class="brand-logo" src="logo.png" alt="SilverForge Digital Solutions logo">
             </a>
 
-            <a class="btn btn-secondary" href="support.html">
-              Install Help
-            </a>
-          </div>
-        </article>
+            <button class="menu-button" id="menuButton" type="button" aria-expanded="false" aria-label="Open navigation">☰</button>
 
-        <article class="download-card">
-          <div class="download-top">
-            <div>
-              <h3>LDG Maps</h3>
-              <p>
-                Custom map app concept using a futuristic LDG Systems interface, location tracking, markers, and future visual signal-zone features.
-              </p>
-            </div>
-            <div class="version-chip">Prototype</div>
-          </div>
+            <nav class="navigation" id="navigation">
+                <a href="index.html">Home</a>
+                <a href="development.html">Development</a>
+                <a href="social-media.html">Social Media</a>
+                <a href="portfolio.html">Portfolio</a>
+                <a class="active" href="downloads.html">Our Apps</a>
+                <a href="about.html">About</a>
+                <a class="quote-button" href="contact.html">Request a Quote</a>
+            </nav>
+        </div>
+    </header>
 
-          <div class="download-meta">
-            <div class="meta-box">
-              <small>Platform</small>
-              <strong>Android</strong>
+    <main>
+        <section class="page-hero">
+            <div class="container page-hero-content">
+                <span class="eyebrow">SilverForge applications</span>
+                <h1>Apps and digital tools</h1>
+                <p>
+                    Explore applications developed through SilverForge Digital Solutions. Add your official download links when each listing is ready.
+                </p>
             </div>
-            <div class="meta-box">
-              <small>Map Style</small>
-              <strong>Custom UI</strong>
-            </div>
-            <div class="meta-box">
-              <small>Status</small>
-              <strong>Early Build</strong>
-            </div>
-          </div>
+        </section>
 
-          <div class="download-actions">
-            <a class="btn btn-secondary" href="projects.html">View Project</a>
-          </div>
-        </article>
+        <section class="section section-dark">
+            <div class="container">
+                <div class="card-grid three">
+                    <article class="card download-card">
+                        <div class="card-icon">SM</div>
+                        <span class="project-label">Android Utility</span>
+                        <h3>System Monitor</h3>
+                        <p>Monitor battery details, memory, storage, network information and other device statistics.</p>
+                        <div class="button-row">
+                            <!-- Replace # with the official Google Play link when ready. -->
+                            <a class="secondary-button" href="#">Download Information</a>
+                        </div>
+                    </article>
 
-        <article class="download-card">
-          <div class="download-top">
-            <div>
-              <h3>LDG Assistant</h3>
-              <p>
-                Private desktop AI assistant project focused on local Ollama models, project memory, coding help, PC tools, image support, and a more personal assistant interface.
-              </p>
+                    <article class="card download-card">
+                        <div class="card-icon">AD</div>
+                        <span class="project-label">Game Companion</span>
+                        <h3>Age of Dominion Counter</h3>
+                        <p>Track players, rounds, authority, instability, dice rolls, coin flips and match information.</p>
+                        <div class="button-row">
+                            <!-- Replace # with the official Google Play link when ready. -->
+                            <a class="secondary-button" href="#">Download Information</a>
+                        </div>
+                    </article>
+
+                    <article class="card download-card">
+                        <div class="card-icon">NH</div>
+                        <span class="project-label">Media and Journal</span>
+                        <h3>Nexus Hub</h3>
+                        <p>Organize movies, shows, anime, books and games while keeping personal journal entries in one hub.</p>
+                        <div class="button-row">
+                            <!-- Replace # with the official Google Play link when ready. -->
+                            <a class="secondary-button" href="#">Coming Later</a>
+                        </div>
+                    </article>
+                </div>
             </div>
-            <div class="version-chip">Private Dev</div>
-          </div>
+        </section>
 
-          <div class="download-meta">
-            <div class="meta-box">
-              <small>Platform</small>
-              <strong>Windows</strong>
+        <section class="section">
+            <div class="container split">
+                <div>
+                    <span class="eyebrow">App support</span>
+                    <h2>Need help with a SilverForge application?</h2>
+                    <p class="lead">
+                        Use the support page for general troubleshooting and application support information.
+                    </p>
+                    <div class="hero-buttons">
+                        <a class="primary-button" href="support.html">Visit Support</a>
+                        <a class="secondary-button" href="privacy.html">Read Privacy Information</a>
+                    </div>
+                </div>
+
+                <div class="feature-panel">
+                    <h3>Before adding download links</h3>
+                    <ul class="feature-list">
+                        <li>Use the official Google Play listing URL</li>
+                        <li>Confirm the application name and version</li>
+                        <li>Link the correct privacy policy</li>
+                        <li>Do not upload installation files from unknown sources</li>
+                    </ul>
+                </div>
             </div>
-            <div class="meta-box">
-              <small>AI Mode</small>
-              <strong>Local/Hybrid</strong>
-            </div>
-            <div class="meta-box">
-              <small>Status</small>
-              <strong>Private</strong>
-            </div>
-          </div>
+        </section>
+    </main>
 
-          <div class="download-actions">
-            <a class="btn btn-secondary" href="projects.html">View Project</a>
-          </div>
-        </article>
+    <footer>
+        <div class="container footer-content">
+            <div>© <span data-current-year></span> SilverForge Digital Solutions</div>
+            <div class="footer-links"><a href="support.html">Support</a><a href="privacy.html">Privacy</a><a href="contact.html">Contact</a></div>
+        </div>
+    </footer>
 
-        <article class="download-card">
-          <div class="download-top">
-            <div>
-              <h3>Future Downloads</h3>
-              <p>
-                Future public files may include APK releases, Windows ZIP packages, beta builds, changelogs, screenshots, and install instructions.
-              </p>
-            </div>
-            <div class="version-chip">Planned</div>
-          </div>
-
-          <div class="download-meta">
-            <div class="meta-box">
-              <small>Android</small>
-              <strong>APK/AAB</strong>
-            </div>
-            <div class="meta-box">
-              <small>Windows</small>
-              <strong>ZIP/EXE</strong>
-            </div>
-            <div class="meta-box">
-              <small>Website</small>
-              <strong>Google Drive</strong>
-            </div>
-          </div>
-
-          <div class="download-actions">
-            <a class="btn btn-secondary" href="updates.html">View Updates</a>
-          </div>
-        </article>
-
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <div class="container footer-wrap">
-      <div>© 2026 LDG Systems. All rights reserved.</div>
-      <div class="footer-links">
-        <a href="projects.html">Projects</a>
-        <a href="updates.html">Updates</a>
-        <a href="support.html">Support</a>
-        <a href="privacy.html">Privacy</a>
-      </div>
-    </div>
-  </footer>
-
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
