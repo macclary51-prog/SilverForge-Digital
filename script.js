@@ -1,45 +1,60 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const navToggle = document.getElementById("navToggle");
-  const navLinks = document.getElementById("navLinks");
+const menuButton = document.getElementById("menuButton");
+const navigation = document.getElementById("navigation");
 
-  if (navToggle && navLinks) {
-    navToggle.addEventListener("click", () => {
-      const isOpen = navLinks.classList.toggle("open");
-      navToggle.setAttribute("aria-expanded", String(isOpen));
+if (menuButton && navigation) {
+    menuButton.addEventListener("click", function () {
+        const isOpen = navigation.classList.toggle("open");
+        menuButton.setAttribute("aria-expanded", String(isOpen));
+        menuButton.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
     });
 
-    navLinks.querySelectorAll("a").forEach((link) => {
-      link.addEventListener("click", () => {
-        navLinks.classList.remove("open");
-        navToggle.setAttribute("aria-expanded", "false");
-      });
+    navigation.querySelectorAll("a").forEach(function (link) {
+        link.addEventListener("click", function () {
+            navigation.classList.remove("open");
+            menuButton.setAttribute("aria-expanded", "false");
+            menuButton.setAttribute("aria-label", "Open navigation");
+        });
     });
+}
 
-    document.addEventListener("click", (event) => {
-      const clickedInsideMenu = navLinks.contains(event.target);
-      const clickedToggle = navToggle.contains(event.target);
-
-      if (!clickedInsideMenu && !clickedToggle) {
-        navLinks.classList.remove("open");
-        navToggle.setAttribute("aria-expanded", "false");
-      }
-    });
-  }
-
-  const currentPage = window.location.pathname.split("/").pop() || "index.html";
-  const navAnchors = document.querySelectorAll(".nav-links a");
-
-  navAnchors.forEach((link) => {
-    const linkPage = link.getAttribute("href");
-
-    link.classList.remove("active");
-
-    if (linkPage === currentPage) {
-      link.classList.add("active");
-    }
-
-    if (currentPage === "" && linkPage === "index.html") {
-      link.classList.add("active");
-    }
-  });
+document.querySelectorAll("[data-current-year]").forEach(function (year) {
+    year.textContent = new Date().getFullYear();
 });
+
+const contactForm = document.getElementById("contactForm");
+const formMessage = document.getElementById("formMessage");
+
+if (contactForm && formMessage) {
+    contactForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        /* Replace YOUR_EMAIL_HERE with your real business email address. */
+        const businessEmail = "YOUR_EMAIL_HERE";
+
+        if (businessEmail === "YOUR_EMAIL_HERE") {
+            formMessage.textContent = "Add your business email inside script.js before publishing.";
+            return;
+        }
+
+        const name = document.getElementById("name").value;
+        const business = document.getElementById("business").value;
+        const customerEmail = document.getElementById("email").value;
+        const service = document.getElementById("service").value;
+        const message = document.getElementById("message").value;
+        const subject = "SilverForge Project Request - " + service;
+
+        const body =
+            "Name: " + name + "\n" +
+            "Business: " + business + "\n" +
+            "Customer Email: " + customerEmail + "\n" +
+            "Service: " + service + "\n\n" +
+            "Project Details:\n" + message;
+
+        window.location.href =
+            "mailto:" + businessEmail +
+            "?subject=" + encodeURIComponent(subject) +
+            "&body=" + encodeURIComponent(body);
+
+        formMessage.textContent = "Opening your email application...";
+    });
+}
