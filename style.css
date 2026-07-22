@@ -493,6 +493,18 @@ p {
     border-color: rgba(255, 255, 255, 0.62);
 }
 
+.service-image {
+    display: block;
+    width: 100%;
+    height: 165px;
+    margin-bottom: 22px;
+    object-fit: cover;
+    object-position: center;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 16px;
+    box-shadow: 0 14px 30px rgba(2, 31, 73, 0.28);
+}
+
 .card-icon {
     display: grid;
     width: 58px;
