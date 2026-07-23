@@ -4,8 +4,12 @@ const navigation = document.getElementById("navigation");
 if (menuButton && navigation) {
     menuButton.addEventListener("click", function () {
         const isOpen = navigation.classList.toggle("open");
+
         menuButton.setAttribute("aria-expanded", String(isOpen));
-        menuButton.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
+        menuButton.setAttribute(
+            "aria-label",
+            isOpen ? "Close navigation" : "Open navigation"
+        );
     });
 
     navigation.querySelectorAll("a").forEach(function (link) {
@@ -28,24 +32,30 @@ if (contactForm && formMessage) {
     contactForm.addEventListener("submit", function (event) {
         event.preventDefault();
 
-        /* Replace YOUR_EMAIL_HERE with your real business email address. */
-        const businessEmail = "YOUR_EMAIL_HERE";
+        const businessEmail =
+            "silverforgedigitalsolutions@gmail.com";
 
-        if (businessEmail === "YOUR_EMAIL_HERE") {
-            formMessage.textContent = "Add your business email inside script.js before publishing.";
-            return;
-        }
+        const name =
+            document.getElementById("name").value;
 
-        const name = document.getElementById("name").value;
-        const business = document.getElementById("business").value;
-        const customerEmail = document.getElementById("email").value;
-        const service = document.getElementById("service").value;
-        const message = document.getElementById("message").value;
-        const subject = "SilverForge Project Request - " + service;
+        const business =
+            document.getElementById("business").value;
+
+        const customerEmail =
+            document.getElementById("email").value;
+
+        const service =
+            document.getElementById("service").value;
+
+        const message =
+            document.getElementById("message").value;
+
+        const subject =
+            "SilverForge Project Request - " + service;
 
         const body =
             "Name: " + name + "\n" +
-            "Business: " + business + "\n" +
+            "Business: " + (business || "Not provided") + "\n" +
             "Customer Email: " + customerEmail + "\n" +
             "Service: " + service + "\n\n" +
             "Project Details:\n" + message;
@@ -55,6 +65,7 @@ if (contactForm && formMessage) {
             "?subject=" + encodeURIComponent(subject) +
             "&body=" + encodeURIComponent(body);
 
-        formMessage.textContent = "Opening your email application...";
+        formMessage.textContent =
+            "Opening your email application...";
     });
 }
