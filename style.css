@@ -298,23 +298,6 @@ I want to replace current logo with this logo
 da70c869-992d-49f8-bcf7-792ba8553e6b.png
 can you remove background and make a sticker to look better on the website
 
-Worked for 6m 26s
-Creating image
-Done—the background is transparent, with a clean white sticker outline, navy edge, and subtle shadow. The original logo and wording remain unchanged.
-
-SilverForge sticker logo
-SilverForge sticker logo
-SilverForge sticker logo
-
-Share
-
-silverforge-logo-sticker.png
-
-Rename it logo.png, replace the current website file, commit, then refresh with Ctrl + F5.
-
-
-it worked
-
 Perfect—the transparent sticker logo is now live. Because every page uses logo.png, it should appear across the entire website automatically. No additional code is needed.
 
 
@@ -345,10 +328,16 @@ style.css.txt
 Replace everything in GitHub’s style.css with this file, commit, then press Ctrl + F5. Keep your current logo.png; no other files need changing.
 
 
-Library
-/
-my business
-/
+no revert 
+
+Worked for 1m 2s
+Reverted to the exact previous stylesheet.
+
+style.css.txt
+
+Replace your current style.css with it and commit the change. No other files need changing.
+
+
 style.css.txt
 
 
@@ -1337,10 +1326,6 @@ footer {
         align-items: flex-start;
     }
 }
-Library
-/
-my business
-/
 style.css.txt
 
 
