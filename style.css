@@ -343,11 +343,19 @@ style.css.txt
 Replace everything in GitHub’s style.css, commit, then press Ctrl+F5. No other files need changing.
 
 
-Library
-/
-my business
-/
-style.css.txt
+diddnt do it
+
+Worked for 3m 38s
+I found the problem: your live style.css accidentally contains old chat messages and duplicate CSS, so the color rules are being ignored.
+
+style.css
+
+Upload this file directly to GitHub to replace the existing style.css—don’t copy text from the chat. Commit it, wait about one minute, then press Ctrl+F5.
+
+This keeps the current logo and service images while restoring the aqua/blue background and silver-white text.
+
+
+style.css
 
 
 :root {
@@ -1329,11 +1337,7 @@ footer {
         align-items: flex-start;
     }
 }
-Library
-/
-my business
-/
-style.css.txt
+style.css
 
 
 :root {
