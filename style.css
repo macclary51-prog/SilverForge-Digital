@@ -298,11 +298,6 @@ I want to replace current logo with this logo
 da70c869-992d-49f8-bcf7-792ba8553e6b.png
 can you remove background and make a sticker to look better on the website
 
-Perfect—the transparent sticker logo is now live. Because every page uses logo.png, it should appear across the entire website automatically. No additional code is needed.
-
-
-sort of the s is half cut off
-
 Worked for 2m 16s
 Creating image
 You were right—the left edge was too tight. I added transparent space so the “S” is fully visible without changing the logo.
@@ -338,6 +333,20 @@ style.css.txt
 Replace your current style.css with it and commit the change. No other files need changing.
 
 
+the logo is good but i want the colors for the rest to go back to what it was like the text
+
+Worked for 2m 49s
+Done. The original text and website colors are restored, while the new sticker logo remains unchanged and fully visible.
+
+style.css.txt
+
+Replace everything in GitHub’s style.css, commit, then press Ctrl+F5. No other files need changing.
+
+
+Library
+/
+my business
+/
 style.css.txt
 
 
@@ -487,7 +496,7 @@ p {
     overflow: visible;
 }
 
-/* Keeps the complete transparent sticker logo visible. */
+/* Keeps the transparent sticker logo fully visible without changing the site colors. */
 .brand-logo {
     position: absolute;
     inset: 0;
@@ -1249,12 +1258,6 @@ footer {
         width: 126px;
         height: 92px;
         flex-basis: 126px;
-    }
-
-    .brand-logo {
-        inset: 0;
-        width: 100%;
-        height: 100%;
     }
 
     .navigation {
@@ -1326,6 +1329,10 @@ footer {
         align-items: flex-start;
     }
 }
+Library
+/
+my business
+/
 style.css.txt
 
 
@@ -1475,7 +1482,7 @@ p {
     overflow: visible;
 }
 
-/* Keeps the complete transparent sticker logo visible. */
+/* Keeps the transparent sticker logo fully visible without changing the site colors. */
 .brand-logo {
     position: absolute;
     inset: 0;
@@ -2237,12 +2244,6 @@ footer {
         width: 126px;
         height: 92px;
         flex-basis: 126px;
-    }
-
-    .brand-logo {
-        inset: 0;
-        width: 100%;
-        height: 100%;
     }
 
     .navigation {
