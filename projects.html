@@ -1,154 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q9P5WXS5P4"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
 
-  <title>Projects - LDG Systems</title>
-  <meta name="description" content="LDG Systems projects including System Monitor, LDG Maps, Advanced Monitor, LDG Quick Tools, and future games." />
+        function gtag() {
+            dataLayer.push(arguments);
+        }
 
-  <link rel="stylesheet" href="style.css" />
+        gtag("js", new Date());
+        gtag("config", "G-Q9P5WXS5P4");
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="description"
+        content="View projects and selected work from SilverForge Digital Solutions."
+    >
+
+    <title>Projects | SilverForge Digital Solutions</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <header class="topbar">
-    <div class="container nav">
-      <a href="index.html" class="brand">
-        <div class="brand-mark">LDG</div>
-        <span>LDG Systems</span>
-      </a>
+    <header class="site-header">
+        <div class="container header-content">
+            <a
+                class="brand"
+                href="index.html"
+                aria-label="SilverForge Digital Solutions home"
+            >
+                <img
+                    class="brand-logo"
+                    src="logo.png"
+                    alt="SilverForge Digital Solutions logo"
+                >
+            </a>
 
-      <button class="nav-toggle" id="navToggle" type="button" aria-label="Open navigation" aria-expanded="false">Menu</button>
+            <button
+                class="menu-button"
+                id="menuButton"
+                type="button"
+                aria-expanded="false"
+                aria-label="Open navigation"
+            >
+                ☰
+            </button>
 
-      <nav class="nav-links" id="navLinks">
-        <a href="index.html">Home</a>
-        <a href="about.html">About</a>
-        <a href="projects.html" class="active">Projects</a>
-        <a href="downloads.html">Downloads</a>
-        <a href="updates.html">Updates</a>
-        <a href="screenshots.html">Screenshots</a>
-        <a href="support.html">Support</a>
-        <a href="privacy.html">Privacy</a>
-        <a href="contact.html">Contact</a>
-      </nav>
+            <nav class="navigation" id="navigation">
+                <a href="index.html">Home</a>
+                <a href="development.html">Development</a>
+                <a href="social-media.html">Social Media</a>
+                <a class="active" href="projects.html">Projects</a>
+                <a href="downloads.html">Our Apps</a>
+                <a href="about.html">About</a>
+                <a class="quote-button" href="contact.html">
+                    Request a Quote
+                </a>
+            </nav>
+        </div>
+    </header>
 
-      <a class="nav-cta" href="downloads.html">Get Builds</a>
-    </div>
-  </header>
+    <main>
+        <section class="page-hero">
+            <div class="container page-hero-content">
+                <span class="eyebrow">Our work</span>
 
-  <main>
-    <section class="page-hero">
-      <div class="container">
-        <div class="eyebrow">LDG Systems Projects</div>
-        <h1>Apps, tools, and <span>future builds</span></h1>
-        <p>
-          Explore the current LDG Systems project lineup, including Android utilities,
-          Windows software, mapping tools, AI ideas, and future game projects.
-        </p>
-      </div>
-    </section>
+                <h1>SilverForge projects</h1>
 
-    <section>
-      <div class="container cards-grid">
-        <article class="card">
-          <div class="tag">Android Utility</div>
-          <h3>System Monitor</h3>
-          <p>
-            A futuristic phone utility focused on battery stats, RAM, storage, network details,
-            device info, alerts, live monitoring, and future gaming overlay expansion.
-          </p>
-          <ul class="list">
-            <li>Battery temperature, voltage, charge, and health</li>
-            <li>RAM, CPU, storage, and network information</li>
-            <li>Live monitoring and warning notifications</li>
-          </ul>
-        </article>
+                <p>
+                    Explore the websites, applications and digital services
+                    developed by SilverForge Digital Solutions.
+                </p>
+            </div>
+        </section>
 
-        <article class="card">
-          <div class="tag">Android Tools</div>
-          <h3>LDG Quick Tools</h3>
-          <p>
-            A daily utility app with calculators, converters, flashlight, stopwatch,
-            BMI calculator, tax calculator, random number tools, text counter, and planned media tools.
-          </p>
-          <ul class="list">
-            <li>Calculator and unit converter tools</li>
-            <li>Flashlight, stopwatch, BMI, tip, tax, and text tools</li>
-            <li>Planned image and video converter tools</li>
-          </ul>
-        </article>
+        <section class="section section-dark">
+            <div class="container">
+                <div class="section-heading">
+                    <span class="eyebrow">Portfolio</span>
+                    <h2>Selected work coming soon</h2>
 
-        <article class="card">
-          <div class="tag">Maps / Signal Tools</div>
-          <h3>LDG Maps</h3>
-          <p>
-            A custom map project designed around the LDG Systems style with future support for markers,
-            location tools, signal areas, and dead-zone style overlays.
-          </p>
-          <ul class="list">
-            <li>Custom map interface</li>
-            <li>Location and marker tools</li>
-            <li>Future signal-zone concepts</li>
-          </ul>
-        </article>
+                    <p class="lead">
+                        We are preparing project examples that demonstrate our
+                        website development, application development and digital
+                        marketing services.
+                    </p>
+                </div>
 
-        <article class="card">
-          <div class="tag">Windows Utility</div>
-          <h3>Advanced Monitor</h3>
-          <p>
-            A futuristic Windows desktop system monitor with tabs, detailed hardware information,
-            performance sections, network diagnostics, settings controls, and a dashboard interface.
-          </p>
-          <ul class="list">
-            <li>CPU, RAM, storage, GPU, BIOS, and motherboard info</li>
-            <li>Network and diagnostics sections</li>
-            <li>Future public ZIP release</li>
-          </ul>
-        </article>
+                <div class="feature-panel">
+                    <h3>No projects are displayed yet</h3>
 
-        <article class="card">
-          <div class="tag">AI Assistant</div>
-          <h3>LDG Assistant</h3>
-          <p>
-            A private desktop AI assistant concept focused on local AI, coding help, project memory,
-            image tools, PC assistance, and a more personal companion-style interface.
-          </p>
-          <ul class="list">
-            <li>Local Ollama model support</li>
-            <li>Project memory and coding helper ideas</li>
-            <li>Future voice and image expansion</li>
-          </ul>
-        </article>
+                    <p>
+                        Completed websites, applications, social media work,
+                        videos and advertising projects will be added here when
+                        they are ready to be featured.
+                    </p>
+                </div>
+            </div>
+        </section>
 
-        <article class="card">
-          <div class="tag">Future Game</div>
-          <h3>LDG: Containment</h3>
-          <p>
-            A future game concept set in the LDG universe, focused on cyber-defense,
-            hacking-style gameplay, systems control, and deeper world-building.
-          </p>
-          <ul class="list">
-            <li>Cyber-defense gameplay direction</li>
-            <li>Shared universe concept</li>
-            <li>Future expansion with Vanguard-style projects</li>
-          </ul>
-        </article>
-      </div>
-    </section>
-  </main>
+        <section class="section">
+            <div class="container split">
+                <div>
+                    <span class="eyebrow">Business projects</span>
 
-  <footer class="footer">
-    <div class="container footer-wrap">
-      <div>© 2026 LDG Systems. All rights reserved.</div>
-      <div class="footer-links">
-        <a href="downloads.html">Downloads</a>
-        <a href="updates.html">Updates</a>
-        <a href="support.html">Support</a>
-        <a href="contact.html">Contact</a>
-      </div>
-    </div>
-  </footer>
+                    <h2>Solutions built around real business needs</h2>
 
-  <script src="script.js"></script>
+                    <p class="lead">
+                        SilverForge creates practical digital solutions for
+                        small businesses and independent companies without
+                        adding unnecessary complexity.
+                    </p>
+
+                    <ul class="feature-list">
+                        <li>Business websites and redesigns</li>
+                        <li>Custom applications and business tools</li>
+                        <li>Customer quote and request systems</li>
+                        <li>Social media branding and content</li>
+                        <li>Video and promotional campaigns</li>
+                    </ul>
+                </div>
+
+                <div class="feature-panel">
+                    <h3>Future case studies</h3>
+
+                    <p>
+                        Completed client work can be presented here with project
+                        goals, features, screenshots and results after receiving
+                        permission from the client.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section section-dark">
+            <div class="container">
+                <div class="cta">
+                    <span class="eyebrow">Start your project</span>
+
+                    <h2>Your business could be our next project</h2>
+
+                    <p>
+                        Tell us what your business needs and what you want your
+                        website, application or digital marketing to accomplish.
+                    </p>
+
+                    <a class="primary-button" href="contact.html">
+                        Start a Project
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container footer-content">
+            <div>
+                © <span data-current-year></span>
+                SilverForge Digital Solutions
+            </div>
+
+            <div class="footer-links">
+                <a href="support.html">Support</a>
+                <a href="privacy.html">Privacy</a>
+                <a href="contact.html">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>
- 
