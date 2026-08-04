@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>CRM Sign In | SilverForge Digital Solutions</title>
+    <link rel="stylesheet" href="crm.css">
+</head>
+
+<body class="crm-auth-page">
+    <main class="crm-auth-shell">
+        <section class="crm-auth-card" aria-labelledby="loginTitle">
+            <a class="crm-brand" href="index.html" aria-label="SilverForge Digital Solutions home">
+                <img src="logo.png" alt="SilverForge Digital Solutions logo">
+                <span>
+                    SilverForge Digital
+                    <small>Private CRM</small>
+                </span>
+            </a>
+
+            <div class="crm-auth-heading">
+                <span class="crm-eyebrow">Administrator access</span>
+                <h1 id="loginTitle">Sign in to the CRM</h1>
+                <p>Use the email and password assigned to your Firebase administrator account.</p>
+            </div>
+
+            <form class="crm-form" id="loginForm">
+                <label class="crm-field" for="loginEmail">
+                    <span>Email address</span>
+                    <input id="loginEmail" name="email" type="email" autocomplete="username" maxlength="254" required>
+                </label>
+
+                <label class="crm-field" for="loginPassword">
+                    <span>Password</span>
+                    <input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+                </label>
+
+                <button class="crm-primary-button" id="loginButton" type="submit" disabled>
+                    Checking access...
+                </button>
+
+                <p class="crm-status" id="loginStatus" role="status" aria-live="polite">
+                    Checking your current sign-in status...
+                </p>
+            </form>
+
+            <a class="crm-back-link" href="index.html">Return to the public website</a>
+        </section>
+    </main>
+
+    <script type="module" src="crm-login.js"></script>
+</body>
+</html>

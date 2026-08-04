@@ -46,6 +46,15 @@ const formMessage =
     document.getElementById("formMessage");
 
 if (contactForm && formMessage) {
+    const allowedServices = new Set([
+        "App Development",
+        "Website Development",
+        "Social Media Management",
+        "Content and Video Creation",
+        "Digital Advertising",
+        "Multiple Services"
+    ]);
+
     const honeypot =
         document.createElement("input");
 
@@ -78,21 +87,46 @@ if (contactForm && formMessage) {
                 return;
             }
 
-            const businessEmail =
-                "silverforgedigitalsolutions@gmail.com";
-
-            const endpoint =
-                "https://formsubmit.co/ajax/" +
-                businessEmail;
-
             const formData =
                 new FormData(contactForm);
 
-            const service =
-                formData.get("service");
+            const name = String(
+                formData.get("name") || ""
+            ).trim();
 
-            const customerEmail =
-                formData.get("email");
+            const business = String(
+                formData.get("business") || ""
+            ).trim();
+
+            const email = String(
+                formData.get("email") || ""
+            ).trim();
+
+            const phone = String(
+                formData.get("phone") || ""
+            ).trim();
+
+            const service = String(
+                formData.get("service") || ""
+            ).trim();
+
+            const message = String(
+                formData.get("message") || ""
+            ).trim();
+
+            if (
+                !name ||
+                !business ||
+                !email ||
+                !phone ||
+                !message ||
+                !allowedServices.has(service)
+            ) {
+                formMessage.textContent =
+                    "Complete every required field before sending your request.";
+
+                return;
+            }
 
             const submitButton =
                 contactForm.querySelector(
@@ -101,33 +135,6 @@ if (contactForm && formMessage) {
 
             const originalButtonText =
                 submitButton.textContent;
-
-            const submission = {
-                name: formData.get("name"),
-
-                business:
-                    formData.get("business") ||
-                    "Not provided",
-
-                email: customerEmail,
-
-                _replyto: customerEmail,
-
-                service: service,
-
-                message:
-                    formData.get("message"),
-
-                _subject:
-                    "SilverForge Project Request - " +
-                    service,
-
-                _template: "table",
-
-                _captcha: "false",
-
-                _honey: ""
-            };
 
             submitButton.disabled = true;
 
@@ -138,77 +145,50 @@ if (contactForm && formMessage) {
                 "Sending your project request...";
 
             try {
-                const response = await fetch(
-                    endpoint,
+                const [firebase, firestore] =
+                    await Promise.all([
+                        import("./firebase-config.js"),
+                        import(
+                            "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js"
+                        )
+                    ]);
+
+                if (
+                    !firebase.isFirebaseConfigured ||
+                    !firebase.db
+                ) {
+                    throw new Error(
+                        "Firebase configuration is incomplete."
+                    );
+                }
+
+                await firestore.addDoc(
+                    firestore.collection(
+                        firebase.db,
+                        "leads"
+                    ),
                     {
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json",
-
-                            "Accept":
-                                "application/json"
-                        },
-
-                        body:
-                            JSON.stringify(
-                                submission
-                            )
+                        name,
+                        business,
+                        email,
+                        phone,
+                        service,
+                        message,
+                        status: "new",
+                        quoteAmount: null,
+                        followUpDate: "",
+                        internalNotes: "",
+                        createdAt:
+                            firestore.serverTimestamp(),
+                        updatedAt:
+                            firestore.serverTimestamp()
                     }
                 );
 
-                const responseText =
-                    await response.text();
+                formMessage.textContent =
+                    "Thank you. Your project request was sent successfully.";
 
-                let result = null;
-
-                try {
-                    result =
-                        JSON.parse(responseText);
-                } catch (error) {
-                    result = null;
-                }
-
-                const responseMessage =
-                    result && result.message
-                        ? String(result.message)
-                        : responseText;
-
-                const activationNeeded =
-                    /activate|activation|confirm/i.test(
-                        responseMessage
-                    );
-
-                const reportedFailure =
-                    result &&
-                    (
-                        result.success === false ||
-                        result.success === "false"
-                    );
-
-                if (
-                    !response.ok ||
-                    (
-                        reportedFailure &&
-                        !activationNeeded
-                    )
-                ) {
-                    throw new Error(
-                        responseMessage ||
-                        "Form submission failed."
-                    );
-                }
-
-                if (activationNeeded) {
-                    formMessage.textContent =
-                        "Check silverforgedigitalsolutions@gmail.com for the FormSubmit activation email. Click its activation link, then submit the form again.";
-                } else {
-                    formMessage.textContent =
-                        "Thank you. Your project request was sent successfully.";
-
-                    contactForm.reset();
-                }
+                contactForm.reset();
             } catch (error) {
                 console.error(
                     "Quote form error:",
@@ -216,7 +196,7 @@ if (contactForm && formMessage) {
                 );
 
                 formMessage.textContent =
-                    "The request could not be sent. Please try again or email silverforgedigitalsolutions@gmail.com directly.";
+                    "The request could not be sent. Please try again in a moment.";
             } finally {
                 submitButton.disabled = false;
 

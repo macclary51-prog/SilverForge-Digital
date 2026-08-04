@@ -84,40 +84,47 @@
                     <div class="form-row">
                         <div class="form-field">
                             <label for="name">Your name</label>
-                            <input id="name" name="name" type="text" required>
+                            <input id="name" name="name" type="text" autocomplete="name" maxlength="120" required>
                         </div>
 
                         <div class="form-field">
                             <label for="business">Business name</label>
-                            <input id="business" name="business" type="text">
+                            <input id="business" name="business" type="text" autocomplete="organization" maxlength="160" required>
                         </div>
                     </div>
 
-                    <div class="form-field">
-                        <label for="email">Email address</label>
-                        <input id="email" name="email" type="email" required>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="email">Email address</label>
+                            <input id="email" name="email" type="email" autocomplete="email" maxlength="254" required>
+                        </div>
+
+                        <div class="form-field">
+                            <label for="phone">Phone number</label>
+                            <input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="40" required>
+                        </div>
                     </div>
 
                     <div class="form-field">
                         <label for="service">Service needed</label>
                         <select id="service" name="service" required>
                             <option value="">Choose a service</option>
-                            <option>App Development</option>
-                            <option>Website Development</option>
-                            <option>Social Media Management</option>
-                            <option>Content and Video Creation</option>
-                            <option>Digital Advertising</option>
-                            <option>Multiple Services</option>
+                            <option value="App Development">App Development</option>
+                            <option value="Website Development">Website Development</option>
+                            <option value="Social Media Management">Social Media Management</option>
+                            <option value="Content and Video Creation">Content and Video Creation</option>
+                            <option value="Digital Advertising">Digital Advertising</option>
+                            <option value="Multiple Services">Multiple Services</option>
                         </select>
                     </div>
 
                     <div class="form-field">
                         <label for="message">Project details</label>
-                        <textarea id="message" name="message" placeholder="Tell us about your business and project..." required></textarea>
+                        <textarea id="message" name="message" maxlength="5000" placeholder="Tell us about your business and project..." required></textarea>
                     </div>
 
                     <button class="submit-button" type="submit">Send Project Request</button>
-                    <p class="form-message" id="formMessage"></p>
+                    <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>
                 </form>
             </div>
         </section>

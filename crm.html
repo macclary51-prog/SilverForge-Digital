@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Lead CRM | SilverForge Digital Solutions</title>
+    <link rel="stylesheet" href="crm.css">
+</head>
+
+<body class="crm-page">
+    <div class="crm-access-gate" id="accessGate" role="status" aria-live="polite">
+        <div class="crm-spinner" aria-hidden="true"></div>
+        <p id="accessMessage">Verifying administrator access...</p>
+    </div>
+
+    <div class="crm-app" id="crmApp" hidden>
+        <header class="crm-header">
+            <a class="crm-brand crm-brand-compact" href="index.html" aria-label="SilverForge Digital Solutions home">
+                <img src="logo.png" alt="SilverForge Digital Solutions logo">
+                <span>
+                    SilverForge Digital
+                    <small>Lead CRM</small>
+                </span>
+            </a>
+
+            <div class="crm-account">
+                <span id="adminEmail">Administrator</span>
+                <button class="crm-secondary-button" id="signOutButton" type="button">Sign out</button>
+            </div>
+        </header>
+
+        <main class="crm-main">
+            <section class="crm-page-heading" aria-labelledby="crmTitle">
+                <div>
+                    <span class="crm-eyebrow">Private workspace</span>
+                    <h1 id="crmTitle">Lead overview</h1>
+                    <p>Review quote requests, follow up with customers, and move projects through the pipeline.</p>
+                </div>
+
+                <div class="crm-live-indicator">
+                    <span aria-hidden="true"></span>
+                    Live updates
+                </div>
+            </section>
+
+            <section class="crm-summary-grid" aria-label="Lead summary">
+                <article class="crm-summary-card">
+                    <span>Total leads</span>
+                    <strong id="totalLeads">0</strong>
+                </article>
+
+                <article class="crm-summary-card">
+                    <span>New leads</span>
+                    <strong id="newLeads">0</strong>
+                </article>
+
+                <article class="crm-summary-card">
+                    <span>Quotes sent</span>
+                    <strong id="quotesSent">0</strong>
+                </article>
+
+                <article class="crm-summary-card">
+                    <span>Accepted projects</span>
+                    <strong id="acceptedProjects">0</strong>
+                </article>
+
+                <article class="crm-summary-card">
+                    <span>In progress</span>
+                    <strong id="inProgressProjects">0</strong>
+                </article>
+
+                <article class="crm-summary-card">
+                    <span>Completed</span>
+                    <strong id="completedProjects">0</strong>
+                </article>
+            </section>
+
+            <section class="crm-leads-panel" aria-labelledby="leadListTitle">
+                <div class="crm-panel-heading">
+                    <div>
+                        <span class="crm-eyebrow">Customer pipeline</span>
+                        <h2 id="leadListTitle">Quote requests</h2>
+                    </div>
+
+                    <span class="crm-result-count" id="leadResultCount">Loading leads...</span>
+                </div>
+
+                <div class="crm-toolbar">
+                    <label class="crm-field crm-search-field" for="leadSearch">
+                        <span>Search leads</span>
+                        <input id="leadSearch" type="search" placeholder="Name, business, email, phone, or service">
+                    </label>
+
+                    <label class="crm-field crm-filter-field" for="statusFilter">
+                        <span>Filter by status</span>
+                        <select id="statusFilter">
+                            <option value="all">All statuses</option>
+                            <option value="new">New</option>
+                            <option value="contacted">Contacted</option>
+                            <option value="qualified">Qualified</option>
+                            <option value="quote-sent">Quote Sent</option>
+                            <option value="accepted">Accepted</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="lost">Lost</option>
+                        </select>
+                    </label>
+                </div>
+
+                <p class="crm-status crm-panel-status" id="leadListStatus" role="status" aria-live="polite">
+                    Loading leads...
+                </p>
+
+                <div class="crm-lead-list" id="leadList" role="list"></div>
+            </section>
+        </main>
+    </div>
+
+    <dialog class="crm-dialog" id="leadDialog" aria-labelledby="leadDialogTitle">
+        <div class="crm-dialog-shell">
+            <header class="crm-dialog-header">
+                <div>
+                    <span class="crm-eyebrow">Lead details</span>
+                    <h2 id="leadDialogTitle">Customer request</h2>
+                </div>
+
+                <button class="crm-icon-button" id="closeLeadDialog" type="button" aria-label="Close lead details">&times;</button>
+            </header>
+
+            <div class="crm-contact-actions">
+                <a class="crm-secondary-button" id="callLead" href="#">Call customer</a>
+                <a class="crm-secondary-button" id="emailLead" href="#">Email customer</a>
+            </div>
+
+            <dl class="crm-detail-grid">
+                <div>
+                    <dt>Customer</dt>
+                    <dd id="detailName">—</dd>
+                </div>
+                <div>
+                    <dt>Business</dt>
+                    <dd id="detailBusiness">—</dd>
+                </div>
+                <div>
+                    <dt>Email</dt>
+                    <dd id="detailEmail">—</dd>
+                </div>
+                <div>
+                    <dt>Phone</dt>
+                    <dd id="detailPhone">—</dd>
+                </div>
+                <div>
+                    <dt>Service</dt>
+                    <dd id="detailService">—</dd>
+                </div>
+                <div>
+                    <dt>Submitted</dt>
+                    <dd id="detailCreatedAt">—</dd>
+                </div>
+                <div class="crm-detail-full">
+                    <dt>Project details</dt>
+                    <dd id="detailMessage">—</dd>
+                </div>
+            </dl>
+
+            <form class="crm-form crm-lead-form" id="leadForm">
+                <div class="crm-form-grid">
+                    <label class="crm-field" for="leadStatus">
+                        <span>Status</span>
+                        <select id="leadStatus" name="status" required>
+                            <option value="new">New</option>
+                            <option value="contacted">Contacted</option>
+                            <option value="qualified">Qualified</option>
+                            <option value="quote-sent">Quote Sent</option>
+                            <option value="accepted">Accepted</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="lost">Lost</option>
+                        </select>
+                    </label>
+
+                    <label class="crm-field" for="quoteAmount">
+                        <span>Quote amount</span>
+                        <input id="quoteAmount" name="quoteAmount" type="number" min="0" max="100000000" step="0.01" inputmode="decimal" placeholder="0.00">
+                    </label>
+
+                    <label class="crm-field crm-field-full" for="followUpDate">
+                        <span>Follow-up date</span>
+                        <input id="followUpDate" name="followUpDate" type="date">
+                    </label>
+
+                    <label class="crm-field crm-field-full" for="internalNotes">
+                        <span>Private internal notes</span>
+                        <textarea id="internalNotes" name="internalNotes" rows="7" maxlength="10000" placeholder="Add private notes for this lead..."></textarea>
+                    </label>
+                </div>
+
+                <p class="crm-status" id="leadFormStatus" role="status" aria-live="polite"></p>
+
+                <div class="crm-form-actions">
+                    <button class="crm-primary-button" id="updateLeadButton" type="submit">Update lead</button>
+                    <button class="crm-danger-button" id="deleteLeadButton" type="button">Delete lead</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <script type="module" src="crm.js"></script>
+</body>
+</html>
