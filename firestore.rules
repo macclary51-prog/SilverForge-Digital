@@ -1,0 +1,157 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isActiveAdmin() {
+      return isSignedIn()
+        && exists(
+          /databases/$(database)/documents/roles/$(request.auth.uid)
+        )
+        && get(
+          /databases/$(database)/documents/roles/$(request.auth.uid)
+        ).data.role == "admin"
+        && get(
+          /databases/$(database)/documents/roles/$(request.auth.uid)
+        ).data.active == true;
+    }
+
+    function hasExpectedLeadFields(data) {
+      return data.keys().hasAll([
+        "name",
+        "business",
+        "email",
+        "phone",
+        "service",
+        "message",
+        "status",
+        "quoteAmount",
+        "followUpDate",
+        "internalNotes",
+        "createdAt",
+        "updatedAt"
+      ])
+      && data.keys().hasOnly([
+        "name",
+        "business",
+        "email",
+        "phone",
+        "service",
+        "message",
+        "status",
+        "quoteAmount",
+        "followUpDate",
+        "internalNotes",
+        "createdAt",
+        "updatedAt"
+      ]);
+    }
+
+    function hasValidCustomerFields(data) {
+      return data.name is string
+        && data.name.size() > 0
+        && data.name.size() <= 120
+        && data.business is string
+        && data.business.size() > 0
+        && data.business.size() <= 160
+        && data.email is string
+        && data.email.size() > 3
+        && data.email.size() <= 254
+        && data.email.matches("^[^@]+@[^@]+[.][^@]+$")
+        && data.phone is string
+        && data.phone.size() >= 7
+        && data.phone.size() <= 40
+        && data["service"] is string
+        && data["service"] in [
+          "App Development",
+          "Website Development",
+          "Social Media Management",
+          "Content and Video Creation",
+          "Digital Advertising",
+          "Multiple Services"
+        ]
+        && data.message is string
+        && data.message.size() > 0
+        && data.message.size() <= 5000;
+    }
+
+    function hasValidAdminFields(data) {
+      return data.status is string
+        && data.status in [
+          "new",
+          "contacted",
+          "qualified",
+          "quote-sent",
+          "accepted",
+          "in-progress",
+          "completed",
+          "lost"
+        ]
+        && (
+          data.quoteAmount == null
+          || (
+            data.quoteAmount is number
+            && data.quoteAmount >= 0
+            && data.quoteAmount <= 100000000
+          )
+        )
+        && data.followUpDate is string
+        && data.followUpDate.size() <= 10
+        && data.followUpDate.matches("^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
+        && data.internalNotes is string
+        && data.internalNotes.size() <= 10000
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidPublicLead() {
+      let data = request.resource.data;
+
+      return hasExpectedLeadFields(data)
+        && hasValidCustomerFields(data)
+        && data.status == "new"
+        && data.quoteAmount == null
+        && data.followUpDate == ""
+        && data.internalNotes == ""
+        && data.createdAt == request.time
+        && data.updatedAt == request.time;
+    }
+
+    function isValidAdminUpdate() {
+      let data = request.resource.data;
+
+      return hasExpectedLeadFields(data)
+        && hasValidCustomerFields(data)
+        && hasValidAdminFields(data)
+        && data.updatedAt == request.time
+        && data.diff(resource.data).affectedKeys().hasOnly([
+          "status",
+          "quoteAmount",
+          "followUpDate",
+          "internalNotes",
+          "updatedAt"
+        ]);
+    }
+
+    match /leads/{leadId} {
+      allow create: if isValidPublicLead();
+      allow get, list: if isActiveAdmin();
+      allow update: if isActiveAdmin() && isValidAdminUpdate();
+      allow delete: if isActiveAdmin();
+    }
+
+    match /roles/{userUid} {
+      allow get: if isSignedIn()
+        && request.auth.uid == userUid;
+
+      allow list, create, update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
