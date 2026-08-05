@@ -196,6 +196,66 @@
                     </label>
                 </div>
 
+                <section class="crm-email-section" aria-labelledby="customerEmailTitle">
+                    <div class="crm-email-heading">
+                        <div>
+                            <span class="crm-eyebrow">Customer communication</span>
+                            <h3 id="customerEmailTitle">Customer Email</h3>
+                        </div>
+
+                        <p>This message will be sent to the customer. Private notes are never included.</p>
+                    </div>
+
+                    <div class="crm-email-compose-grid">
+                        <label class="crm-field" for="emailTemplate">
+                            <span>Email template</span>
+                            <select id="emailTemplate" name="emailTemplate">
+                                <option value="initial-response">Initial Response</option>
+                                <option value="request-more-information">Request More Information</option>
+                                <option value="send-quote">Send Quote</option>
+                                <option value="follow-up">Follow Up</option>
+                                <option value="quote-accepted">Quote Accepted</option>
+                                <option value="request-project-content">Request Project Content</option>
+                                <option value="project-progress-update">Project Progress Update</option>
+                                <option value="project-completed">Project Completed</option>
+                                <option value="custom-message">Custom Message</option>
+                            </select>
+                        </label>
+
+                        <label class="crm-field crm-field-full" for="emailSubject">
+                            <span>Email subject</span>
+                            <input id="emailSubject" name="emailSubject" type="text" maxlength="998" autocomplete="off" placeholder="Enter an email subject">
+                        </label>
+
+                        <label class="crm-field crm-field-full" for="emailMessage">
+                            <span>Email message</span>
+                            <textarea id="emailMessage" name="emailMessage" rows="12" maxlength="20000" spellcheck="true" placeholder="Generate a template or write a custom message"></textarea>
+                        </label>
+                    </div>
+
+                    <div class="crm-email-actions" aria-label="Customer email actions">
+                        <button class="crm-primary-button" id="generateEmailButton" type="button">Generate Email</button>
+                        <button class="crm-secondary-button" id="copyEmailButton" type="button">Copy Email</button>
+                        <button class="crm-secondary-button" id="openEmailButton" type="button">Open Email</button>
+                        <button class="crm-primary-button" id="markEmailSentButton" type="button">Mark as Sent</button>
+                    </div>
+
+                    <p class="crm-status crm-email-status" id="emailStatus" role="status" aria-live="polite"></p>
+
+                    <section class="crm-communication-history" aria-labelledby="communicationHistoryTitle">
+                        <div class="crm-history-heading">
+                            <h4 id="communicationHistoryTitle">Communication history</h4>
+                            <span>Newest first</span>
+                        </div>
+
+                        <p class="crm-status" id="communicationHistoryStatus" role="status" aria-live="polite">
+                            Select a lead to load customer communications.
+                        </p>
+
+                        <div class="crm-communication-list" id="communicationHistoryList"></div>
+                    </section>
+                </section>
+
                 <p class="crm-status" id="leadFormStatus" role="status" aria-live="polite"></p>
 
                 <div class="crm-form-actions">

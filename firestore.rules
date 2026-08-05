@@ -46,6 +46,27 @@ service cloud.firestore {
         "followUpDate",
         "internalNotes",
         "createdAt",
+        "updatedAt",
+        "lastEmailTemplate",
+        "lastEmailSubject",
+        "lastEmailBody",
+        "lastEmailMarkedSentAt"
+      ]);
+    }
+
+    function hasOnlyPublicLeadFields(data) {
+      return data.keys().hasOnly([
+        "name",
+        "business",
+        "email",
+        "phone",
+        "service",
+        "message",
+        "status",
+        "quoteAmount",
+        "followUpDate",
+        "internalNotes",
+        "createdAt",
         "updatedAt"
       ]);
     }
@@ -107,10 +128,44 @@ service cloud.firestore {
         && data.updatedAt is timestamp;
     }
 
+    function hasValidStoredEmailFields(data) {
+      let emailFields = [
+        "lastEmailTemplate",
+        "lastEmailSubject",
+        "lastEmailBody",
+        "lastEmailMarkedSentAt"
+      ];
+
+      return !data.keys().hasAny(emailFields)
+        || (
+          data.keys().hasAll(emailFields)
+          && data.lastEmailTemplate is string
+          && data.lastEmailTemplate in [
+            "initial-response",
+            "request-more-information",
+            "send-quote",
+            "follow-up",
+            "quote-accepted",
+            "request-project-content",
+            "project-progress-update",
+            "project-completed",
+            "custom-message"
+          ]
+          && data.lastEmailSubject is string
+          && data.lastEmailSubject.size() > 0
+          && data.lastEmailSubject.size() <= 998
+          && data.lastEmailBody is string
+          && data.lastEmailBody.size() > 0
+          && data.lastEmailBody.size() <= 20000
+          && data.lastEmailMarkedSentAt is timestamp
+        );
+    }
+
     function isValidPublicLead() {
       let data = request.resource.data;
 
       return hasExpectedLeadFields(data)
+        && hasOnlyPublicLeadFields(data)
         && hasValidCustomerFields(data)
         && data.status == "new"
         && data.quoteAmount == null
@@ -126,6 +181,7 @@ service cloud.firestore {
       return hasExpectedLeadFields(data)
         && hasValidCustomerFields(data)
         && hasValidAdminFields(data)
+        && hasValidStoredEmailFields(data)
         && data.updatedAt == request.time
         && data.diff(resource.data).affectedKeys().hasOnly([
           "status",
@@ -136,11 +192,89 @@ service cloud.firestore {
         ]);
     }
 
+    function isValidAdminEmailUpdate() {
+      let data = request.resource.data;
+
+      return hasExpectedLeadFields(data)
+        && hasValidCustomerFields(data)
+        && hasValidAdminFields(data)
+        && hasValidStoredEmailFields(data)
+        && data.lastEmailMarkedSentAt == request.time
+        && data.updatedAt == request.time
+        && data.diff(resource.data).affectedKeys().hasOnly([
+          "lastEmailTemplate",
+          "lastEmailSubject",
+          "lastEmailBody",
+          "lastEmailMarkedSentAt",
+          "updatedAt"
+        ]);
+    }
+
+    function isValidEmailCommunication() {
+      let data = request.resource.data;
+
+      return data.keys().hasAll([
+        "type",
+        "template",
+        "subject",
+        "body",
+        "recipient",
+        "markedSentAt",
+        "createdBy"
+      ])
+      && data.keys().hasOnly([
+        "type",
+        "template",
+        "subject",
+        "body",
+        "recipient",
+        "markedSentAt",
+        "createdBy"
+      ])
+      && data.type == "email"
+      && data.template is string
+      && data.template in [
+        "initial-response",
+        "request-more-information",
+        "send-quote",
+        "follow-up",
+        "quote-accepted",
+        "request-project-content",
+        "project-progress-update",
+        "project-completed",
+        "custom-message"
+      ]
+      && data.subject is string
+      && data.subject.size() > 0
+      && data.subject.size() <= 998
+      && data.body is string
+      && data.body.size() > 0
+      && data.body.size() <= 20000
+      && data.recipient is string
+      && data.recipient.size() > 3
+      && data.recipient.size() <= 254
+      && data.recipient.matches("^[^@]+@[^@]+[.][^@]+$")
+      && data.markedSentAt == request.time
+      && data.createdBy is string
+      && data.createdBy == request.auth.uid;
+    }
+
     match /leads/{leadId} {
       allow create: if isValidPublicLead();
       allow get, list: if isActiveAdmin();
-      allow update: if isActiveAdmin() && isValidAdminUpdate();
+      allow update: if isActiveAdmin()
+        && (
+          isValidAdminUpdate()
+          || isValidAdminEmailUpdate()
+        );
       allow delete: if isActiveAdmin();
+
+      match /communications/{communicationId} {
+        allow get, list: if isActiveAdmin();
+        allow create: if isActiveAdmin()
+          && isValidEmailCommunication();
+        allow update, delete: if false;
+      }
     }
 
     match /roles/{userUid} {
