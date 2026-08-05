@@ -1,0 +1,691 @@
+:root {
+    --proposal-aqua: #1bbfc9;
+    --proposal-aqua-soft: #dff9fa;
+    --proposal-blue: #0879c9;
+    --proposal-navy: #04386f;
+    --proposal-navy-dark: #021f49;
+    --proposal-silver: #d5e0e5;
+    --proposal-silver-light: #f4f7f9;
+    --proposal-ink: #172a3b;
+    --proposal-muted: #607180;
+    --proposal-border: #d7e1e6;
+    --proposal-white: #ffffff;
+    --proposal-success: #16855c;
+    --proposal-danger: #b93f50;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+html {
+    min-height: 100%;
+}
+
+body {
+    min-width: 320px;
+    min-height: 100vh;
+    margin: 0;
+    color: var(--proposal-ink);
+    background:
+        radial-gradient(circle at 20% 0, rgba(27, 191, 201, 0.2), transparent 30%),
+        linear-gradient(145deg, var(--proposal-navy-dark), var(--proposal-navy));
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    line-height: 1.55;
+}
+
+button,
+a {
+    font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible {
+    outline: 3px solid rgba(27, 191, 201, 0.65);
+    outline-offset: 3px;
+}
+
+.proposal-access-gate {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+    align-content: center;
+    gap: 16px;
+    padding: 28px;
+    color: var(--proposal-silver-light);
+    text-align: center;
+}
+
+.proposal-access-gate p {
+    margin: 0;
+    color: var(--proposal-silver);
+}
+
+.proposal-access-return {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    padding: 0 16px;
+    color: var(--proposal-navy-dark);
+    background: var(--proposal-silver-light);
+    border-radius: 10px;
+    font-weight: 850;
+    text-decoration: none;
+}
+
+.proposal-spinner {
+    width: 42px;
+    height: 42px;
+    border: 4px solid rgba(255, 255, 255, 0.18);
+    border-top-color: var(--proposal-aqua);
+    border-radius: 50%;
+    animation: proposal-spin 0.85s linear infinite;
+}
+
+@keyframes proposal-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.proposal-app {
+    padding: 24px 18px 60px;
+}
+
+.proposal-toolbar {
+    position: sticky;
+    top: 14px;
+    z-index: 10;
+    display: flex;
+    width: min(1180px, 100%);
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 auto 14px;
+    padding: 12px;
+    color: var(--proposal-silver-light);
+    background: rgba(2, 31, 73, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 18px 45px rgba(1, 16, 38, 0.34);
+    backdrop-filter: blur(14px);
+}
+
+.proposal-toolbar-link,
+.proposal-toolbar button {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    color: var(--proposal-silver-light);
+    background: rgba(8, 121, 201, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.proposal-toolbar button:hover,
+.proposal-toolbar-link:hover {
+    background: rgba(8, 121, 201, 0.36);
+}
+
+.proposal-toolbar .proposal-toolbar-primary {
+    color: var(--proposal-navy-dark);
+    background: linear-gradient(145deg, #ffffff, #d5e0e5);
+}
+
+.proposal-toolbar button:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+}
+
+.proposal-toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.proposal-action-status {
+    width: min(1180px, 100%);
+    min-height: 24px;
+    margin: 0 auto 14px;
+    color: var(--proposal-silver);
+    font-size: 0.88rem;
+    text-align: center;
+}
+
+.proposal-action-status[data-state="success"] {
+    color: #8cf0bc;
+}
+
+.proposal-action-status[data-state="error"] {
+    color: #ff9ca8;
+}
+
+.proposal-document {
+    width: min(8.5in, 100%);
+    min-height: 11in;
+    margin: 0 auto;
+    padding: 0.7in;
+    background: var(--proposal-white);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 6px;
+    box-shadow: 0 30px 80px rgba(1, 16, 38, 0.46);
+}
+
+.proposal-document-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 32px;
+    padding-bottom: 28px;
+    border-bottom: 4px solid var(--proposal-navy);
+}
+
+.proposal-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.proposal-brand img {
+    width: 88px;
+    height: 72px;
+    object-fit: contain;
+}
+
+.proposal-brand div {
+    display: grid;
+    gap: 3px;
+}
+
+.proposal-brand strong {
+    color: var(--proposal-navy-dark);
+    font-size: 1.02rem;
+}
+
+.proposal-brand span {
+    max-width: 240px;
+    color: var(--proposal-muted);
+    font-size: 0.75rem;
+}
+
+.proposal-title-block {
+    display: grid;
+    justify-items: end;
+    text-align: right;
+}
+
+.proposal-kicker,
+.proposal-section-label,
+.proposal-meta-grid span,
+.proposal-date-grid span,
+.proposal-price-card span,
+.proposal-signature-grid span {
+    color: var(--proposal-blue);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.proposal-title-block h1 {
+    margin: 5px 0 10px;
+    color: var(--proposal-navy-dark);
+    font-size: 2.35rem;
+    line-height: 1;
+    letter-spacing: -0.045em;
+}
+
+.proposal-status-badge {
+    display: inline-flex;
+    min-height: 28px;
+    align-items: center;
+    padding: 4px 10px;
+    color: var(--proposal-navy);
+    background: var(--proposal-aqua-soft);
+    border: 1px solid #9ce4e7;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 900;
+}
+
+.proposal-status-sent,
+.proposal-status-accepted {
+    color: var(--proposal-success);
+    background: #e8f8f0;
+    border-color: #a8dec6;
+}
+
+.proposal-status-declined,
+.proposal-status-expired {
+    color: var(--proposal-danger);
+    background: #fff0f2;
+    border-color: #f1bcc4;
+}
+
+.proposal-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 28px 0;
+}
+
+.proposal-meta-grid > div,
+.proposal-date-grid > div {
+    display: grid;
+    gap: 5px;
+    padding: 14px;
+    background: var(--proposal-silver-light);
+    border: 1px solid var(--proposal-border);
+    border-radius: 10px;
+}
+
+.proposal-meta-grid strong,
+.proposal-date-grid strong {
+    color: var(--proposal-navy-dark);
+    font-size: 0.9rem;
+}
+
+.proposal-prepared-for {
+    margin: 34px 0;
+}
+
+.proposal-prepared-for h2,
+.proposal-section h2 {
+    margin: 6px 0 8px;
+    color: var(--proposal-navy-dark);
+    line-height: 1.15;
+}
+
+.proposal-prepared-for h2 {
+    font-size: 1.75rem;
+}
+
+.proposal-prepared-for p {
+    margin: 0;
+    color: var(--proposal-muted);
+    font-weight: 700;
+}
+
+.proposal-contact-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    margin-top: 8px;
+    color: var(--proposal-muted);
+    font-size: 0.83rem;
+}
+
+.proposal-section {
+    margin: 28px 0;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+.proposal-section h2 {
+    font-size: 1.35rem;
+}
+
+.proposal-section-card {
+    padding: 22px;
+    background: #fbfcfd;
+    border: 1px solid var(--proposal-border);
+    border-left: 5px solid var(--proposal-aqua);
+    border-radius: 12px;
+}
+
+.proposal-copy {
+    color: #334b5e;
+    white-space: pre-wrap;
+}
+
+.proposal-deliverables {
+    display: grid;
+    gap: 9px;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.proposal-deliverables li {
+    position: relative;
+    padding-left: 24px;
+    color: #334b5e;
+}
+
+.proposal-deliverables li::before {
+    position: absolute;
+    top: 0.12em;
+    left: 0;
+    color: var(--proposal-aqua);
+    content: "\2713";
+    font-weight: 900;
+}
+
+.proposal-timeline-section {
+    display: grid;
+    grid-template-columns: 0.7fr 1.3fr;
+    align-items: center;
+    gap: 20px;
+    padding: 24px;
+    color: var(--proposal-white);
+    background: linear-gradient(135deg, var(--proposal-navy-dark), var(--proposal-navy));
+    border-radius: 14px;
+}
+
+.proposal-timeline-section h2,
+.proposal-timeline-section .proposal-section-label {
+    color: var(--proposal-white);
+}
+
+.proposal-date-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.proposal-date-grid > div {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.proposal-date-grid span {
+    color: #9cebed;
+}
+
+.proposal-date-grid strong {
+    color: var(--proposal-white);
+}
+
+.proposal-pricing-section {
+    padding: 28px;
+    background: var(--proposal-aqua-soft);
+    border: 1px solid #a8e5e8;
+    border-radius: 14px;
+}
+
+.proposal-pricing-section > h2 {
+    margin-bottom: 18px;
+}
+
+.proposal-pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.proposal-price-card {
+    display: grid;
+    min-height: 110px;
+    align-content: space-between;
+    gap: 18px;
+    padding: 18px;
+    background: var(--proposal-white);
+    border: 1px solid #bcdfe2;
+    border-radius: 11px;
+}
+
+.proposal-price-card strong {
+    color: var(--proposal-navy-dark);
+    font-size: 1.35rem;
+}
+
+.proposal-price-primary {
+    color: var(--proposal-white);
+    background: var(--proposal-navy);
+    border-color: var(--proposal-navy);
+}
+
+.proposal-price-primary span,
+.proposal-price-primary strong {
+    color: var(--proposal-white);
+}
+
+.proposal-two-column {
+    display: grid;
+    grid-template-columns: 1.4fr 0.6fr;
+    gap: 16px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+.proposal-two-column .proposal-section {
+    margin: 0;
+}
+
+.proposal-revision-count {
+    margin: 14px 0 0;
+    color: var(--proposal-navy);
+    font-size: 1.6rem;
+    font-weight: 900;
+}
+
+.proposal-acceptance-section {
+    padding: 28px;
+    border: 2px solid var(--proposal-navy);
+    border-radius: 14px;
+}
+
+.proposal-acceptance-section p {
+    color: var(--proposal-muted);
+}
+
+.proposal-signature-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 0.5fr;
+    gap: 32px;
+    margin-top: 44px;
+}
+
+.proposal-signature-line {
+    height: 38px;
+    border-bottom: 1px solid #71808b;
+}
+
+.proposal-document-footer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-top: 42px;
+    padding-top: 24px;
+    color: var(--proposal-muted);
+    border-top: 2px solid var(--proposal-silver);
+}
+
+.proposal-document-footer strong {
+    color: var(--proposal-navy-dark);
+}
+
+.proposal-document-footer p {
+    max-width: 470px;
+    margin: 4px 0 0;
+    font-size: 0.82rem;
+}
+
+.proposal-document-footer a {
+    color: var(--proposal-blue);
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+@media (max-width: 860px) {
+    .proposal-toolbar,
+    .proposal-document-header,
+    .proposal-document-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .proposal-toolbar-actions {
+        justify-content: flex-start;
+    }
+
+    .proposal-title-block {
+        justify-items: start;
+        text-align: left;
+    }
+
+    .proposal-document {
+        padding: 38px;
+    }
+
+    .proposal-timeline-section,
+    .proposal-two-column {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 620px) {
+    .proposal-app {
+        padding: 10px 8px 34px;
+    }
+
+    .proposal-toolbar {
+        position: static;
+    }
+
+    .proposal-toolbar-link,
+    .proposal-toolbar button {
+        width: 100%;
+    }
+
+    .proposal-toolbar-actions,
+    .proposal-meta-grid,
+    .proposal-pricing-grid,
+    .proposal-date-grid,
+    .proposal-signature-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .proposal-toolbar-actions {
+        display: grid;
+        width: 100%;
+    }
+
+    .proposal-document {
+        min-height: auto;
+        padding: 24px;
+    }
+
+    .proposal-brand {
+        align-items: flex-start;
+    }
+
+    .proposal-brand img {
+        width: 70px;
+        height: 58px;
+    }
+
+    .proposal-title-block h1 {
+        font-size: 1.9rem;
+    }
+
+    .proposal-section-card,
+    .proposal-timeline-section,
+    .proposal-pricing-section,
+    .proposal-acceptance-section {
+        padding: 18px;
+    }
+}
+
+@media print {
+    @page {
+        size: Letter;
+        margin: 0.38in;
+    }
+
+    html,
+    body {
+        min-width: 0;
+        min-height: 0;
+        background: #ffffff !important;
+    }
+
+    body {
+        color: #172a3b;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .proposal-access-gate,
+    .proposal-toolbar,
+    .proposal-action-status {
+        display: none !important;
+    }
+
+    .proposal-app {
+        padding: 0;
+    }
+
+    .proposal-document {
+        width: auto;
+        min-height: 0;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .proposal-document-header,
+    .proposal-meta-grid,
+    .proposal-prepared-for,
+    .proposal-section,
+    .proposal-two-column,
+    .proposal-document-footer {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .proposal-section-card,
+    .proposal-pricing-section,
+    .proposal-acceptance-section {
+        background: #ffffff;
+    }
+
+    .proposal-timeline-section,
+    .proposal-price-primary {
+        color: #172a3b;
+        background: #f1f6f8;
+        border: 1px solid #cbd7dd;
+    }
+
+    .proposal-timeline-section h2,
+    .proposal-timeline-section .proposal-section-label,
+    .proposal-date-grid span,
+    .proposal-date-grid strong,
+    .proposal-price-primary span,
+    .proposal-price-primary strong {
+        color: #172a3b;
+    }
+
+    .proposal-date-grid > div {
+        background: #ffffff;
+        border-color: #cbd7dd;
+    }
+
+    a {
+        color: inherit;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Proposal Preview | SilverForge Digital Solutions</title>
+    <link rel="stylesheet" href="proposal.css">
+</head>
+
+<body class="proposal-page">
+    <div class="proposal-access-gate" id="proposalAccessGate" role="status" aria-live="polite">
+        <div class="proposal-spinner" aria-hidden="true"></div>
+        <p id="proposalAccessMessage">Verifying administrator access...</p>
+        <a class="proposal-access-return" id="proposalAccessReturn" href="crm.html" hidden>Return to CRM</a>
+    </div>
+
+    <div class="proposal-app" id="proposalApp" hidden>
+        <nav class="proposal-toolbar" aria-label="Proposal actions">
+            <a class="proposal-toolbar-link" href="crm.html">Return to CRM</a>
+
+            <div class="proposal-toolbar-actions">
+                <button id="printProposalButton" type="button">Print Proposal</button>
+                <button id="savePdfButton" type="button">Save as PDF</button>
+                <button id="copyProposalButton" type="button">Copy Proposal Text</button>
+                <button class="proposal-toolbar-primary" id="markProposalSentButton" type="button">Mark Proposal as Sent</button>
+                <button id="closePreviewButton" type="button">Close Preview</button>
+            </div>
+        </nav>
+
+        <p class="proposal-action-status" id="proposalActionStatus" role="status" aria-live="polite"></p>
+
+        <main class="proposal-document" id="proposalDocument" aria-labelledby="proposalTitle">
+            <header class="proposal-document-header">
+                <div class="proposal-brand">
+                    <img src="logo.png" alt="SilverForge Digital Solutions logo">
+                    <div>
+                        <strong>SilverForge Digital Solutions</strong>
+                        <span>Development, websites, and digital growth</span>
+                    </div>
+                </div>
+
+                <div class="proposal-title-block">
+                    <span class="proposal-kicker">Professional project proposal</span>
+                    <h1 id="proposalTitle">Project Proposal</h1>
+                    <span class="proposal-status-badge" id="proposalDocumentStatus">Draft</span>
+                </div>
+            </header>
+
+            <section class="proposal-meta-grid" aria-label="Proposal information">
+                <div>
+                    <span>Proposal number</span>
+                    <strong id="proposalNumber">Pending</strong>
+                </div>
+                <div>
+                    <span>Date created</span>
+                    <strong id="proposalCreatedDate">Pending</strong>
+                </div>
+                <div>
+                    <span>Valid through</span>
+                    <strong id="proposalExpiration">Not set</strong>
+                </div>
+            </section>
+
+            <section class="proposal-prepared-for">
+                <span class="proposal-section-label">Prepared for</span>
+                <h2 id="proposalClientName">Client</h2>
+                <p id="proposalBusinessName">Business name</p>
+                <div class="proposal-contact-line">
+                    <span id="proposalClientEmail"></span>
+                    <span id="proposalClientPhone"></span>
+                </div>
+            </section>
+
+            <section class="proposal-section">
+                <span class="proposal-section-label">Project</span>
+                <h2 id="proposalProjectTitle">Project title</h2>
+                <div class="proposal-copy" id="proposalClientMessage" hidden></div>
+            </section>
+
+            <section class="proposal-section proposal-section-card">
+                <h2>Project Overview</h2>
+                <div class="proposal-copy" id="proposalOverview">To be confirmed.</div>
+            </section>
+
+            <section class="proposal-section proposal-section-card">
+                <h2>Scope of Work</h2>
+                <div class="proposal-copy" id="proposalScope">To be confirmed.</div>
+            </section>
+
+            <section class="proposal-section proposal-section-card">
+                <h2>Deliverables</h2>
+                <ul class="proposal-deliverables" id="proposalDeliverables">
+                    <li>To be confirmed.</li>
+                </ul>
+            </section>
+
+            <section class="proposal-section proposal-timeline-section">
+                <div>
+                    <span class="proposal-section-label">Estimated timeline</span>
+                    <h2 id="proposalTimeline">To be confirmed</h2>
+                </div>
+
+                <div class="proposal-date-grid">
+                    <div>
+                        <span>Proposed start</span>
+                        <strong id="proposalStartDate">Not set</strong>
+                    </div>
+                    <div>
+                        <span>Proposed completion</span>
+                        <strong id="proposalCompletionDate">Not set</strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="proposal-section proposal-pricing-section">
+                <span class="proposal-section-label">Investment</span>
+                <h2>Pricing Summary</h2>
+
+                <div class="proposal-pricing-grid">
+                    <article class="proposal-price-card proposal-price-primary">
+                        <span>Total project price</span>
+                        <strong id="proposalOfficialPrice">Not set</strong>
+                    </article>
+                    <article class="proposal-price-card">
+                        <span>Deposit amount</span>
+                        <strong id="proposalDepositAmount">Not set</strong>
+                    </article>
+                    <article class="proposal-price-card">
+                        <span>Remaining balance</span>
+                        <strong id="proposalRemainingBalance">Not set</strong>
+                    </article>
+                </div>
+            </section>
+
+            <section class="proposal-two-column">
+                <div class="proposal-section proposal-section-card">
+                    <h2>Payment Terms</h2>
+                    <div class="proposal-copy" id="proposalPaymentTerms">To be confirmed.</div>
+                </div>
+
+                <div class="proposal-section proposal-section-card">
+                    <h2>Included Revisions</h2>
+                    <p class="proposal-revision-count" id="proposalRevisions">To be confirmed</p>
+                </div>
+            </section>
+
+            <section class="proposal-section proposal-section-card">
+                <h2>Additional Terms</h2>
+                <div class="proposal-copy" id="proposalAdditionalTerms">None specified.</div>
+            </section>
+
+            <section class="proposal-section proposal-acceptance-section">
+                <span class="proposal-section-label">Acceptance</span>
+                <h2>Project Authorization</h2>
+                <p>By signing below, the client confirms acceptance of this proposal, its pricing, scope, and terms.</p>
+
+                <div class="proposal-signature-grid">
+                    <div>
+                        <span>Client signature</span>
+                        <div class="proposal-signature-line"></div>
+                    </div>
+                    <div>
+                        <span>Date</span>
+                        <div class="proposal-signature-line"></div>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="proposal-document-footer">
+                <div>
+                    <strong>SilverForge Digital Solutions</strong>
+                    <p>Thank you for the opportunity to help build and grow your digital presence.</p>
+                </div>
+                <a href="https://silverforgedigitalsolutions.com/">silverforgedigitalsolutions.com</a>
+            </footer>
+        </main>
+    </div>
+
+    <script type="module" src="proposal.js"></script>
+</body>
+</html>

@@ -24,6 +24,26 @@ const loginButton =
 const loginStatus =
     document.getElementById("loginStatus");
 
+const requestedReturnPath = new URLSearchParams(
+    window.location.search
+).get("return") || "";
+
+
+function getSafeReturnPath() {
+    if (requestedReturnPath === "crm.html") {
+        return requestedReturnPath;
+    }
+
+    if (
+        /^proposal[.]html[?]lead=[A-Za-z0-9_-]{1,128}$/
+            .test(requestedReturnPath)
+    ) {
+        return requestedReturnPath;
+    }
+
+    return "crm.html";
+}
+
 
 function setStatus(message, state = "") {
     loginStatus.textContent = message;
@@ -77,7 +97,7 @@ async function authorizeUser(user) {
         return;
     }
 
-    window.location.replace("crm.html");
+    window.location.replace(getSafeReturnPath());
 }
 
 

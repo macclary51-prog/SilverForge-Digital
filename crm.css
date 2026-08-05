@@ -540,7 +540,7 @@ button:disabled {
 }
 
 .crm-dialog {
-    width: min(900px, calc(100% - 28px));
+    width: min(1120px, calc(100% - 28px));
     max-height: calc(100vh - 28px);
     padding: 0;
     color: var(--crm-silver-light);
@@ -626,6 +626,132 @@ button:disabled {
     border-top: 1px solid var(--crm-border);
 }
 
+.crm-section {
+    margin-top: 24px;
+    padding: 24px;
+    background: rgba(2, 31, 73, 0.56);
+    border: 1px solid var(--crm-border);
+    border-radius: 18px;
+}
+
+.crm-lead-form > .crm-section:first-child {
+    margin-top: 0;
+}
+
+.crm-private-section {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(51, 34, 73, 0.58),
+            rgba(2, 31, 73, 0.62)
+        );
+    border-color: rgba(229, 187, 255, 0.3);
+}
+
+.crm-client-section {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(5, 68, 119, 0.78),
+            rgba(2, 31, 73, 0.64)
+        );
+    border-color: rgba(82, 227, 225, 0.34);
+}
+
+.crm-email-section {
+    background:
+        linear-gradient(
+            145deg,
+            rgba(4, 56, 111, 0.76),
+            rgba(2, 31, 73, 0.64)
+        );
+}
+
+.crm-section-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 22px;
+}
+
+.crm-section-heading h3 {
+    margin: 0;
+    color: var(--crm-white);
+    font-size: clamp(1.18rem, 3vw, 1.55rem);
+}
+
+.crm-section-heading p {
+    max-width: 720px;
+    margin: 7px 0 0;
+    color: var(--crm-silver);
+    font-size: 0.86rem;
+}
+
+.crm-private-badge,
+.crm-proposal-badge {
+    display: inline-flex;
+    min-height: 30px;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.crm-private-badge {
+    color: #f0d7ff;
+    background: rgba(192, 118, 238, 0.16);
+    border: 1px solid rgba(229, 187, 255, 0.34);
+}
+
+.crm-proposal-identity {
+    display: grid;
+    justify-items: end;
+    gap: 8px;
+    min-width: 190px;
+}
+
+.crm-proposal-identity strong {
+    color: var(--crm-silver);
+    font-size: 0.72rem;
+    text-align: right;
+}
+
+.crm-proposal-draft {
+    color: var(--crm-silver-light);
+    background: rgba(213, 224, 229, 0.12);
+    border: 1px solid rgba(213, 224, 229, 0.28);
+}
+
+.crm-proposal-ready {
+    color: #b8f7ff;
+    background: rgba(39, 207, 216, 0.18);
+    border: 1px solid rgba(82, 227, 225, 0.36);
+}
+
+.crm-proposal-sent {
+    color: #fff0bd;
+    background: rgba(255, 208, 106, 0.16);
+    border: 1px solid rgba(255, 208, 106, 0.34);
+}
+
+.crm-proposal-accepted {
+    color: #bff9d8;
+    background: rgba(102, 224, 163, 0.16);
+    border: 1px solid rgba(102, 224, 163, 0.34);
+}
+
+.crm-proposal-declined,
+.crm-proposal-expired {
+    color: #ffd1d6;
+    background: rgba(255, 127, 141, 0.14);
+    border: 1px solid rgba(255, 127, 141, 0.32);
+}
+
 .crm-form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -636,11 +762,116 @@ button:disabled {
     grid-column: 1 / -1;
 }
 
+.crm-pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin: 16px 0 0;
+}
+
+.crm-pricing-grid .crm-field {
+    padding: 15px;
+    background: rgba(2, 31, 73, 0.58);
+    border: 1px solid rgba(82, 227, 225, 0.2);
+    border-radius: 13px;
+}
+
+.crm-pricing-grid input[readonly] {
+    color: var(--crm-aqua-light);
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+.crm-field-help {
+    margin: 8px 0 20px;
+    color: var(--crm-silver-dark);
+    font-size: 0.76rem;
+}
+
+.crm-email-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.crm-email-toolbar button {
+    min-height: 48px;
+}
+
+.crm-button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.crm-activity-section {
+    margin-top: 28px;
+}
+
+.crm-activity-list {
+    display: grid;
+    gap: 0;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.crm-activity-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 12px;
+    padding: 0 0 22px;
+}
+
+.crm-activity-item:not(:last-child)::before {
+    position: absolute;
+    top: 13px;
+    bottom: -3px;
+    left: 6px;
+    width: 2px;
+    background: rgba(82, 227, 225, 0.25);
+    content: "";
+}
+
+.crm-activity-marker {
+    position: relative;
+    z-index: 1;
+    width: 14px;
+    height: 14px;
+    margin-top: 4px;
+    background: var(--crm-aqua);
+    border: 3px solid var(--crm-navy-dark);
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(82, 227, 225, 0.35);
+}
+
+.crm-activity-item > div {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.crm-activity-item strong {
+    color: var(--crm-silver-light);
+    font-size: 0.87rem;
+    overflow-wrap: anywhere;
+}
+
+.crm-activity-item span:last-child {
+    color: var(--crm-silver-dark);
+    font-size: 0.74rem;
+}
+
 .crm-form-actions {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
+    flex-wrap: wrap;
     gap: 12px;
-    margin-top: 4px;
+    margin-top: 18px;
 }
 
 @media (max-width: 1120px) {
@@ -705,7 +936,9 @@ button:disabled {
     .crm-summary-grid,
     .crm-toolbar,
     .crm-form-grid,
-    .crm-detail-grid {
+    .crm-detail-grid,
+    .crm-pricing-grid,
+    .crm-email-toolbar {
         grid-template-columns: 1fr;
     }
 
@@ -728,9 +961,23 @@ button:disabled {
     }
 
     .crm-lead-card-header,
-    .crm-form-actions {
+    .crm-form-actions,
+    .crm-section-heading {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    .crm-proposal-identity {
+        justify-items: start;
+        min-width: 0;
+    }
+
+    .crm-proposal-identity strong {
+        text-align: left;
+    }
+
+    .crm-section {
+        padding: 18px;
     }
 
     .crm-status-badge {
@@ -738,6 +985,11 @@ button:disabled {
     }
 
     .crm-form-actions button {
+        width: 100%;
+    }
+
+    .crm-button-row button,
+    .crm-email-toolbar button {
         width: 100%;
     }
 }

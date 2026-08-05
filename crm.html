@@ -165,44 +165,224 @@
             </dl>
 
             <form class="crm-form crm-lead-form" id="leadForm">
-                <div class="crm-form-grid">
-                    <label class="crm-field" for="leadStatus">
-                        <span>Status</span>
-                        <select id="leadStatus" name="status" required>
-                            <option value="new">New</option>
-                            <option value="contacted">Contacted</option>
-                            <option value="qualified">Qualified</option>
-                            <option value="quote-sent">Quote Sent</option>
-                            <option value="accepted">Accepted</option>
-                            <option value="in-progress">In Progress</option>
-                            <option value="completed">Completed</option>
-                            <option value="lost">Lost</option>
-                        </select>
+                <section class="crm-section crm-private-section" aria-labelledby="privateInformationTitle">
+                    <header class="crm-section-heading">
+                        <div>
+                            <span class="crm-eyebrow">Administrator only</span>
+                            <h3 id="privateInformationTitle">Private SilverForge Information</h3>
+                            <p>These details stay inside the CRM and are never included in client emails or proposals.</p>
+                        </div>
+                        <span class="crm-private-badge">Private</span>
+                    </header>
+
+                    <div class="crm-form-grid">
+                        <label class="crm-field" for="leadStatus">
+                            <span>Lead status</span>
+                            <select id="leadStatus" name="status" required>
+                                <option value="new">New</option>
+                                <option value="contacted">Contacted</option>
+                                <option value="qualified">Qualified</option>
+                                <option value="quote-sent">Quote Sent</option>
+                                <option value="accepted">Accepted</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                                <option value="lost">Lost</option>
+                            </select>
+                        </label>
+
+                        <label class="crm-field" for="quoteAmount">
+                            <span>Legacy quote amount</span>
+                            <input id="quoteAmount" name="quoteAmount" type="number" min="0" max="100000000" step="0.01" inputmode="decimal" placeholder="0.00">
+                        </label>
+
+                        <label class="crm-field crm-field-full" for="followUpDate">
+                            <span>Private follow-up date</span>
+                            <input id="followUpDate" name="followUpDate" type="date">
+                        </label>
+
+                        <label class="crm-field crm-field-full" for="internalNotes">
+                            <span>Private internal notes</span>
+                            <textarea id="internalNotes" name="internalNotes" rows="7" maxlength="10000" placeholder="Add private notes for this lead..."></textarea>
+                        </label>
+                    </div>
+                </section>
+
+                <section class="crm-section crm-client-section" aria-labelledby="clientDocumentsTitle">
+                    <header class="crm-section-heading">
+                        <div>
+                            <span class="crm-eyebrow">Client safe</span>
+                            <h3 id="clientDocumentsTitle">Client Documents and Communication</h3>
+                            <p>Only the information in this section may appear in client-facing emails and proposals.</p>
+                        </div>
+
+                        <div class="crm-proposal-identity">
+                            <span class="crm-proposal-badge crm-proposal-draft" id="proposalStatusBadge">Draft</span>
+                            <strong id="proposalNumberDisplay">Number assigned on first save</strong>
+                        </div>
+                    </header>
+
+                    <div class="crm-form-grid">
+                        <label class="crm-field crm-field-full" for="projectTitle">
+                            <span>Project title</span>
+                            <input id="projectTitle" name="projectTitle" type="text" maxlength="200" placeholder="Business website redesign">
+                        </label>
+
+                        <label class="crm-field crm-field-full" for="clientProjectSummary">
+                            <span>Client-facing project summary</span>
+                            <textarea id="clientProjectSummary" name="clientProjectSummary" rows="5" maxlength="5000" placeholder="Describe the project in clear client-facing language."></textarea>
+                        </label>
+
+                        <label class="crm-field crm-field-full" for="scopeOfWork">
+                            <span>Scope of work</span>
+                            <textarea id="scopeOfWork" name="scopeOfWork" rows="7" maxlength="10000" placeholder="List the work SilverForge will perform."></textarea>
+                        </label>
+
+                        <label class="crm-field crm-field-full" for="deliverables">
+                            <span>Deliverables</span>
+                            <textarea id="deliverables" name="deliverables" rows="6" maxlength="10000" placeholder="Enter one deliverable per line for the clearest proposal layout."></textarea>
+                        </label>
+                    </div>
+
+                    <div class="crm-pricing-grid" aria-label="Proposal pricing">
+                        <label class="crm-field" for="officialPrice">
+                            <span>Official project price</span>
+                            <input id="officialPrice" name="officialPrice" type="number" min="0" max="100000000" step="0.01" inputmode="decimal" placeholder="0.00">
+                        </label>
+
+                        <label class="crm-field" for="depositAmount">
+                            <span>Deposit amount</span>
+                            <input id="depositAmount" name="depositAmount" type="number" min="0" max="100000000" step="0.01" inputmode="decimal" placeholder="0.00">
+                        </label>
+
+                        <label class="crm-field" for="remainingBalance">
+                            <span>Remaining balance</span>
+                            <input id="remainingBalance" name="remainingBalance" type="number" step="0.01" readonly aria-describedby="remainingBalanceHelp">
+                        </label>
+                    </div>
+                    <p class="crm-field-help" id="remainingBalanceHelp">Calculated automatically as official price minus deposit.</p>
+
+                    <div class="crm-form-grid">
+                        <label class="crm-field crm-field-full" for="estimatedTimeline">
+                            <span>Estimated timeline</span>
+                            <input id="estimatedTimeline" name="estimatedTimeline" type="text" maxlength="200" placeholder="Approximately 4-6 weeks">
+                        </label>
+
+                        <label class="crm-field" for="proposedStartDate">
+                            <span>Proposed start date</span>
+                            <input id="proposedStartDate" name="proposedStartDate" type="date">
+                        </label>
+
+                        <label class="crm-field" for="proposedCompletionDate">
+                            <span>Proposed completion date</span>
+                            <input id="proposedCompletionDate" name="proposedCompletionDate" type="date">
+                        </label>
+
+                        <label class="crm-field" for="includedRevisions">
+                            <span>Included revisions</span>
+                            <input id="includedRevisions" name="includedRevisions" type="number" min="0" max="1000" step="1" inputmode="numeric" placeholder="2">
+                        </label>
+
+                        <label class="crm-field" for="proposalExpirationDate">
+                            <span>Proposal expiration date</span>
+                            <input id="proposalExpirationDate" name="proposalExpirationDate" type="date">
+                        </label>
+
+                        <label class="crm-field crm-field-full" for="paymentTerms">
+                            <span>Payment terms</span>
+                            <textarea id="paymentTerms" name="paymentTerms" rows="4" maxlength="5000" placeholder="Example: Deposit due before work begins; remaining balance due before launch."></textarea>
+                        </label>
+
+                        <label class="crm-field crm-field-full" for="additionalTerms">
+                            <span>Additional terms</span>
+                            <textarea id="additionalTerms" name="additionalTerms" rows="4" maxlength="5000" placeholder="Add client-facing conditions or clarifications."></textarea>
+                        </label>
+
+                        <label class="crm-field crm-field-full" for="clientMessage">
+                            <span>Client-facing message</span>
+                            <textarea id="clientMessage" name="clientMessage" rows="5" maxlength="10000" placeholder="Add a polished message that may appear in emails and the proposal."></textarea>
+                        </label>
+
+                        <label class="crm-field crm-field-full" for="proposalStatus">
+                            <span>Proposal status</span>
+                            <select id="proposalStatus" name="proposalStatus">
+                                <option value="draft">Draft</option>
+                                <option value="ready">Ready to Send</option>
+                                <option value="sent">Sent</option>
+                                <option value="accepted">Accepted</option>
+                                <option value="declined">Declined</option>
+                                <option value="expired">Expired</option>
+                            </select>
+                        </label>
+                    </div>
+                </section>
+
+                <section class="crm-section crm-email-section" aria-labelledby="emailComposerTitle">
+                    <header class="crm-section-heading">
+                        <div>
+                            <span class="crm-eyebrow">Professional communication</span>
+                            <h3 id="emailComposerTitle">Email Composer</h3>
+                            <p>Generate and edit a message. Nothing is sent automatically.</p>
+                        </div>
+                    </header>
+
+                    <div class="crm-email-toolbar">
+                        <label class="crm-field" for="emailTemplate">
+                            <span>Email template</span>
+                            <select id="emailTemplate">
+                                <option value="initial-response">Initial Response</option>
+                                <option value="request-information">Request More Information</option>
+                                <option value="send-proposal">Send Proposal</option>
+                                <option value="follow-up">Follow Up</option>
+                                <option value="proposal-accepted">Proposal Accepted</option>
+                                <option value="request-content">Request Project Content</option>
+                                <option value="progress-update">Project Progress Update</option>
+                                <option value="project-completed">Project Completed</option>
+                                <option value="custom">Custom Message</option>
+                            </select>
+                        </label>
+
+                        <button class="crm-secondary-button" id="generateEmailButton" type="button">Generate Email</button>
+                    </div>
+
+                    <label class="crm-field" for="emailSubject">
+                        <span>Email subject</span>
+                        <input id="emailSubject" type="text" maxlength="300" placeholder="Generate a template or enter a subject">
                     </label>
 
-                    <label class="crm-field" for="quoteAmount">
-                        <span>Quote amount</span>
-                        <input id="quoteAmount" name="quoteAmount" type="number" min="0" max="100000000" step="0.01" inputmode="decimal" placeholder="0.00">
+                    <label class="crm-field" for="emailBody">
+                        <span>Email body</span>
+                        <textarea id="emailBody" rows="14" maxlength="20000" placeholder="Generate a professional message, then edit it as needed."></textarea>
                     </label>
 
-                    <label class="crm-field crm-field-full" for="followUpDate">
-                        <span>Follow-up date</span>
-                        <input id="followUpDate" name="followUpDate" type="date">
-                    </label>
+                    <p class="crm-status" id="emailComposerStatus" role="status" aria-live="polite"></p>
 
-                    <label class="crm-field crm-field-full" for="internalNotes">
-                        <span>Private internal notes</span>
-                        <textarea id="internalNotes" name="internalNotes" rows="7" maxlength="10000" placeholder="Add private notes for this lead..."></textarea>
-                    </label>
-                </div>
+                    <div class="crm-button-row">
+                        <button class="crm-secondary-button" id="copyEmailButton" type="button">Copy Email</button>
+                        <button class="crm-secondary-button" id="openEmailButton" type="button">Open Email App</button>
+                        <button class="crm-secondary-button" id="markEmailSentButton" type="button">Mark Email as Sent</button>
+                    </div>
+                </section>
 
                 <p class="crm-status" id="leadFormStatus" role="status" aria-live="polite"></p>
 
                 <div class="crm-form-actions">
-                    <button class="crm-primary-button" id="updateLeadButton" type="submit">Update lead</button>
-                    <button class="crm-danger-button" id="deleteLeadButton" type="button">Delete lead</button>
+                    <button class="crm-primary-button" id="updateLeadButton" type="submit">Save Lead</button>
+                    <button class="crm-secondary-button" id="previewProposalButton" type="button">Preview Proposal</button>
+                    <button class="crm-danger-button" id="deleteLeadButton" type="button">Delete Lead</button>
                 </div>
             </form>
+
+            <section class="crm-section crm-activity-section" aria-labelledby="activityTitle">
+                <header class="crm-section-heading">
+                    <div>
+                        <span class="crm-eyebrow">Audit trail</span>
+                        <h3 id="activityTitle">Activity Timeline</h3>
+                    </div>
+                </header>
+
+                <p class="crm-status" id="activityStatus" role="status" aria-live="polite">Select a lead to load activity.</p>
+                <ol class="crm-activity-list" id="activityList"></ol>
+            </section>
         </div>
     </dialog>
 
