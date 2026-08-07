@@ -240,17 +240,17 @@ textarea:focus-visible {
 
 .crm-primary-button {
     padding: 0 20px;
-    color: #061220;
-    background: linear-gradient(145deg, #ffffff, #d8e2ed 72%, #bac9d8);
-    border: 1px solid rgba(255, 255, 255, 0.82);
-    box-shadow: 0 12px 28px rgba(0, 6, 16, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    color: var(--crm-white);
+    background: linear-gradient(145deg, #3f8fdf, #1d5fa8);
+    border: 1px solid rgba(127, 187, 245, 0.7);
+    box-shadow: 0 12px 28px rgba(14, 69, 128, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .crm-secondary-button {
     padding: 0 18px;
     color: var(--crm-silver-light);
-    background: linear-gradient(145deg, rgba(20, 46, 76, 0.95), rgba(7, 19, 33, 0.96));
-    border: 1px solid var(--crm-border-strong);
+    background: linear-gradient(145deg, rgba(39, 74, 108, 0.96), rgba(10, 28, 47, 0.98));
+    border: 1px solid rgba(104, 151, 196, 0.46);
 }
 
 .crm-danger-button {
@@ -443,6 +443,30 @@ button:disabled {
     height: 2px;
     content: "";
     background: linear-gradient(90deg, transparent, rgba(95, 160, 224, 0.78), transparent);
+}
+
+.crm-summary-card:nth-child(6n + 1)::before {
+    background: linear-gradient(90deg, transparent, #4a9ae8, transparent);
+}
+
+.crm-summary-card:nth-child(6n + 2)::before {
+    background: linear-gradient(90deg, transparent, #4aa6b7, transparent);
+}
+
+.crm-summary-card:nth-child(6n + 3)::before {
+    background: linear-gradient(90deg, transparent, #e1b75d, transparent);
+}
+
+.crm-summary-card:nth-child(6n + 4)::before {
+    background: linear-gradient(90deg, transparent, #66c995, transparent);
+}
+
+.crm-summary-card:nth-child(6n + 5)::before {
+    background: linear-gradient(90deg, transparent, #7f90df, transparent);
+}
+
+.crm-summary-card:nth-child(6n + 6)::before {
+    background: linear-gradient(90deg, transparent, #aebdd0, transparent);
 }
 
 .crm-summary-card span {
