@@ -38,9 +38,9 @@ body {
     margin: 0;
     color: var(--crm-silver-light);
     background:
-        radial-gradient(circle at 14% 0, rgba(47, 127, 207, 0.18), transparent 32rem),
-        radial-gradient(circle at 92% 100%, rgba(23, 79, 141, 0.14), transparent 30rem),
-        linear-gradient(145deg, #050b13, #0a1726 66%, #0b2038);
+        radial-gradient(circle at 14% 0, rgba(55, 162, 161, 0.2), transparent 32rem),
+        radial-gradient(circle at 92% 100%, rgba(124, 111, 205, 0.18), transparent 30rem),
+        linear-gradient(145deg, #090c10, #17232a 54%, #211f38);
     background-attachment: fixed;
     font-family: Inter, "Segoe UI", Arial, Helvetica, sans-serif;
     line-height: 1.55;
@@ -94,8 +94,8 @@ textarea:focus-visible {
 .crm-dialog-shell {
     border: 1px solid var(--crm-border);
     background:
-        radial-gradient(circle at 100% 0, rgba(47, 127, 207, 0.1), transparent 18rem),
-        linear-gradient(145deg, rgba(15, 31, 51, 0.98), rgba(5, 14, 25, 0.99));
+        radial-gradient(circle at 100% 0, rgba(118, 108, 199, 0.14), transparent 18rem),
+        linear-gradient(145deg, rgba(37, 45, 54, 0.98), rgba(14, 19, 25, 0.99));
     box-shadow: var(--crm-shadow);
 }
 
@@ -449,24 +449,48 @@ button:disabled {
     background: linear-gradient(90deg, transparent, #4a9ae8, transparent);
 }
 
+.crm-summary-card:nth-child(6n + 1) {
+    background: linear-gradient(145deg, rgba(25, 62, 96, 0.98), rgba(10, 25, 41, 0.99));
+}
+
 .crm-summary-card:nth-child(6n + 2)::before {
     background: linear-gradient(90deg, transparent, #4aa6b7, transparent);
+}
+
+.crm-summary-card:nth-child(6n + 2) {
+    background: linear-gradient(145deg, rgba(20, 68, 68, 0.98), rgba(8, 30, 32, 0.99));
 }
 
 .crm-summary-card:nth-child(6n + 3)::before {
     background: linear-gradient(90deg, transparent, #e1b75d, transparent);
 }
 
+.crm-summary-card:nth-child(6n + 3) {
+    background: linear-gradient(145deg, rgba(74, 59, 34, 0.98), rgba(31, 25, 17, 0.99));
+}
+
 .crm-summary-card:nth-child(6n + 4)::before {
     background: linear-gradient(90deg, transparent, #66c995, transparent);
+}
+
+.crm-summary-card:nth-child(6n + 4) {
+    background: linear-gradient(145deg, rgba(26, 67, 49, 0.98), rgba(11, 29, 22, 0.99));
 }
 
 .crm-summary-card:nth-child(6n + 5)::before {
     background: linear-gradient(90deg, transparent, #7f90df, transparent);
 }
 
+.crm-summary-card:nth-child(6n + 5) {
+    background: linear-gradient(145deg, rgba(54, 49, 91, 0.98), rgba(22, 21, 43, 0.99));
+}
+
 .crm-summary-card:nth-child(6n + 6)::before {
     background: linear-gradient(90deg, transparent, #aebdd0, transparent);
+}
+
+.crm-summary-card:nth-child(6n + 6) {
+    background: linear-gradient(145deg, rgba(52, 61, 69, 0.98), rgba(22, 27, 32, 0.99));
 }
 
 .crm-summary-card span {
@@ -519,7 +543,7 @@ button:disabled {
     display: grid;
     gap: 20px;
     padding: 22px;
-    background: linear-gradient(145deg, rgba(17, 36, 59, 0.96), rgba(6, 16, 28, 0.98));
+    background: linear-gradient(145deg, rgba(35, 50, 58, 0.97), rgba(12, 23, 28, 0.99));
     border: 1px solid var(--crm-border);
     border-radius: 16px;
     box-shadow: 0 16px 38px rgba(0, 6, 16, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.03);
@@ -714,8 +738,8 @@ button:disabled {
     margin-top: 10px;
     padding: 24px;
     background:
-        radial-gradient(circle at 100% 0, rgba(47, 127, 207, 0.12), transparent 18rem),
-        rgba(9, 23, 39, 0.82);
+        radial-gradient(circle at 100% 0, rgba(65, 171, 168, 0.17), transparent 18rem),
+        linear-gradient(145deg, rgba(22, 56, 58, 0.9), rgba(18, 21, 39, 0.92));
     border: 1px solid rgba(135, 189, 255, 0.26);
     border-radius: 16px;
 }
