@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
 
-  <title>My Account | SilverForge Digital Solutions</title>
+  <title>Client Dashboard | SilverForge Digital Solutions</title>
 
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="stylesheet" href="style.css?v=4">
   <link rel="stylesheet" href="customer-account.css?v=1">
+  <link rel="stylesheet" href="portal.css">
 </head>
 
 <body data-customer-page="account">
@@ -72,12 +73,12 @@
           class="active"
           href="customer-account.html"
         >
-          My Account
+          Client Dashboard
         </a>
 
         <a
           class="quote-button"
-          href="contact.html"
+          href="quote.html"
         >
           Request a Quote
         </a>
@@ -120,7 +121,7 @@
         <div class="container page-hero-content">
 
           <span class="eyebrow">
-            SilverForge Client Account
+            SilverForge Client Dashboard
           </span>
 
           <h1 id="customerWelcome">
@@ -128,9 +129,7 @@
           </h1>
 
           <p>
-            Manage your SilverForge profile,
-            email verification,
-            and account security.
+            Track new project quotes, request changes and message SilverForge.
           </p>
 
         </div>
@@ -138,6 +137,96 @@
       </section>
 
 
+      <section class="section section-dark"><div class="container portal-stack">
+<div class="portal-summary" aria-label="Dashboard summary">
+        <article>
+        <span>My Quotes / Projects</span>
+        <strong id="myQuotesCount">—</strong>
+        </article>
+        <article>
+        <span>Open Support Requests</span>
+        <strong id="openTicketsCount">—</strong>
+        </article>
+        <article>
+        <span>Resolved Requests</span>
+        <strong id="resolvedTicketsCount">—</strong>
+        </article>
+        <article>
+        <span>Account Status</span>
+        <strong id="dashboardAccountStatus">—</strong>
+        </article>
+        </div>
+<div>
+        <h2>Quick Actions</h2>
+        <div class="portal-actions">
+        <a class="primary-button" href="#newTicketForm">Report Bug / Request Change</a>
+        <a class="secondary-button" href="quote.html">Request New Project Quote</a>
+        <a class="secondary-button" href="contact.html">General Contact</a>
+        </div>
+        </div>
+<section class="portal-card">
+        <h2>My Quotes / Projects</h2>
+        <p>Quotes submitted while signed in to this account appear here.</p>
+        <p class="form-message" id="myQuotesStatus" role="status" aria-live="polite">
+        </p>
+        <div class="portal-list" id="myQuotes">
+        </div>
+        </section>
+<div class="portal-grid"><section class="portal-card"><h2>Support / Change Requests</h2><p class="form-message" id="myTicketsStatus" role="status" aria-live="polite"></p><div class="portal-list" id="myTickets"></div></section>
+<section class="portal-card">
+        <h2>Report Bug / Request Change</h2>
+        <p>For existing projects and services. Include what happened and what you need changed.</p>
+        <form class="contact-form" id="newTicketForm">
+        <div class="form-field">
+        <label for="type">Request type</label>
+        <select id="type" name="type" required>
+        </select>
+        </div>
+        <div class="form-field">
+        <label for="projectName">Project / service name</label>
+        <input id="projectName" name="projectName" type="text" maxlength="160"  required>
+        </div>
+        <div class="form-field">
+        <label for="title">Request title</label>
+        <input id="title" name="title" type="text" maxlength="200"  required>
+        </div>
+        <div class="form-field">
+        <label for="details">Details</label>
+        <textarea id="details" name="details" maxlength="5000" required>
+        </textarea>
+        </div>
+        <button class="submit-button" type="submit">Create Support Request</button>
+        <p class="form-message" id="newTicketStatus" role="status" aria-live="polite">
+        </p>
+        </form>
+        </section>
+        </div>
+<section class="portal-card portal-detail" id="ticketDetail" tabindex="-1" hidden aria-labelledby="ticketDetailTitle">
+        <div class="portal-actions">
+        <button class="secondary-button" id="closeTicket" type="button">Close Details</button>
+        </div>
+        <h2 id="ticketDetailTitle">
+        </h2>
+        <div id="ticketDetailMeta">
+        </div>
+        <p class="portal-details-text" id="ticketDetails">
+        </p>
+        <h3>Conversation</h3>
+        <div class="portal-conversation" id="ticketMessages" aria-label="Request conversation">
+        </div>
+        <form class="contact-form" id="ticketReplyForm">
+        <div class="form-field">
+        <label for="ticketReply">Message</label>
+        <textarea id="ticketReply" name="ticketReply" maxlength="5000" required>
+        </textarea>
+        </div>
+        <button class="submit-button" type="submit">Send Message</button>
+        <p class="form-message" id="ticketMessageStatus" role="status" aria-live="polite">
+        </p>
+        </form>
+        </section>
+        </div>
+        </section>
       <section class="section section-dark">
 
         <div class="container customer-dashboard-grid">
@@ -362,7 +451,7 @@
 
                 <a
                   class="primary-button customer-full-button"
-                  href="contact.html"
+                  href="quote.html"
                 >
                   Request a Quote
                 </a>
@@ -445,7 +534,7 @@
 
   <script
     type="module"
-    src="customer-auth.js?v=1"
+    src="customer-auth.js?v=2"
   ></script>
 
 </body>

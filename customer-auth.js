@@ -1,4 +1,5 @@
 import { auth, db, isFirebaseConfigured } from "./firebase-config.js";
+import { startCustomerDashboard } from "./customer-dashboard.js";
 
 import {
   createUserWithEmailAndPassword,
@@ -20,6 +21,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const page = document.body.dataset.customerPage || "";
+let stopDashboard = () => {};
 
 function setMessage(element, message, state = "") {
   if (!element) return;
@@ -331,6 +333,9 @@ async function initializeAccount() {
   onAuthStateChanged(
     auth,
     async (user) => {
+      stopDashboard();
+      app.hidden = true;
+      gate.hidden = false;
       if (!user) {
         window.location.replace("customer-login.html");
         return;
@@ -346,6 +351,7 @@ async function initializeAccount() {
 
         const profileSnapshot = await ensureCustomerProfile(user);
         const profile = profileSnapshot.data();
+        if (auth.currentUser?.uid !== user.uid) return;
 
         document.getElementById("customerWelcome").textContent =
           profile.name ? `Welcome, ${String(profile.name).split(/\s+/)[0]}` : "My account";
@@ -373,6 +379,7 @@ async function initializeAccount() {
         gate.hidden = true;
         app.hidden = false;
         bindAccountActions(user);
+        stopDashboard = startCustomerDashboard(user, profile);
       } catch (error) {
         console.error("Customer account load failed:", error);
         gateMessage.textContent = "Your account could not be loaded. Refresh the page or try signing in again.";
@@ -384,6 +391,8 @@ async function initializeAccount() {
     }
   );
 }
+
+window.addEventListener("beforeunload", () => stopDashboard());
 
 function bindAccountActions(user) {
   const form = document.getElementById("customerProfileForm");
@@ -486,8 +495,11 @@ function bindAccountActions(user) {
 
     try {
       await signOut(auth);
-    } finally {
-      window.location.replace("customer-login.html");
+      // The auth observer clears private data and redirects once.
+    } catch (error) {
+      setMessage(actionStatus, "Sign out could not be completed. Please try again.", "error");
+      signOutButton.disabled = false;
+      signOutButton.textContent = "Sign Out";
     }
   });
 }

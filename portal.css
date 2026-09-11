@@ -1,0 +1,34 @@
+/* Extends the existing SilverForge palette and form controls. */
+[hidden] { display: none !important; }
+.portal-stack { display: grid; gap: 24px; }
+.portal-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.portal-summary article { padding: 22px; border: 1px solid var(--line-strong, #2f4a63); border-radius: 14px; background: rgba(33, 72, 109, .16); }
+.portal-summary span { display: block; font-size: .9rem; }
+.portal-summary strong { display: block; font-size: 1.8rem; color: var(--silver-light, #eef6ff); }
+.portal-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.portal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; align-items: start; }
+.portal-card { padding: clamp(18px, 3vw, 30px); border: 1px solid var(--line-strong, #2f4a63); background: rgba(13, 25, 39, .8); border-radius: 16px; min-width: 0; }
+.portal-card h2 { font-size: 1.5rem; }
+.portal-list { display: grid; gap: 14px; }
+.portal-record { border: 1px solid var(--line, #2f4a63); padding: 18px; border-radius: 12px; overflow-wrap: anywhere; }
+.portal-record h3 { font-size: 1.1rem; }
+.portal-metadata { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.portal-metadata div { min-width: 0; }
+.portal-metadata dt { color: var(--silver-dark, #b7c9dc); font-size: .875rem; }
+.portal-metadata dd { margin: 0; overflow-wrap: anywhere; }
+.portal-detail { scroll-margin-top: 120px; }
+.portal-detail:focus { outline: 2px solid var(--aqua-light, #7ddfff); outline-offset: 4px; }
+.portal-details-text, .portal-message p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.portal-conversation { display: grid; gap: 14px; margin: 22px 0; max-height: 520px; overflow-y: auto; padding: 4px; }
+.portal-message { width: min(86%, 660px); padding: 16px; border: 1px solid #385675; border-radius: 12px; }
+.portal-message p { margin: 8px 0; }
+.portal-message small { color: #becddd; }
+.portal-message-customer { justify-self: start; background: #162b40; }
+.portal-message-admin { justify-self: end; background: #153e50; }
+.portal-filters { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; }
+.portal-filters > * { flex: 1 1 230px; }
+.portal-honey { position: absolute; left: -9999px; }
+.form-message[data-state="error"] { color: #ff9aa6; }
+.form-message[data-state="success"] { color: #83e6af; }
+@media (max-width: 900px) { .portal-grid { grid-template-columns: 1fr; } .portal-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 540px) { .portal-summary, .portal-metadata { grid-template-columns: 1fr; } .portal-actions > * { width: 100%; text-align: center; } .portal-message { width: 95%; } }

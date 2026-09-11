@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="robots" content="noindex, nofollow">
+        <title>Support Inbox | SilverForge Digital Solutions</title>
+        <link rel="stylesheet" href="crm.css">
+        <link rel="stylesheet" href="portal.css">
+        <link rel="stylesheet" href="crm-support.css">
+        </head>
+<body class="crm-page"><div class="crm-access-gate" id="accessGate" role="status"><div class="crm-spinner" aria-hidden="true"></div><p id="accessMessage">Verifying administrator access...</p></div><div id="supportApp" hidden>
+<header class="crm-header">
+        <a class="crm-brand crm-brand-compact" href="index.html">
+        <img src="logo.png" alt="SilverForge Digital Solutions logo">
+        <span>SilverForge Digital<small>Support Inbox</small>
+        </span>
+        </a>
+        <div class="crm-account">
+        <a class="crm-secondary-button" href="crm.html">Lead CRM</a>
+        <span id="adminEmail">
+        </span>
+        <button class="crm-secondary-button" id="signOutButton" type="button">Sign out</button>
+        </div>
+        </header>
+<main class="crm-main portal-stack"><div><span class="crm-eyebrow">Client communication</span><h1>Support &amp; Contact Inbox</h1><p>Manage existing client requests and general messages. New project quotes stay in the Lead CRM.</p></div>
+<section class="portal-summary" aria-label="Support summary">
+        <article>
+        <span>Open Support</span>
+        <strong id="openSupportCount">—</strong>
+        </article>
+        <article>
+        <span>Working</span>
+        <strong id="workingCount">—</strong>
+        </article>
+        <article>
+        <span>Resolved</span>
+        <strong id="resolvedCount">—</strong>
+        </article>
+        <article>
+        <span>General Contact Messages</span>
+        <strong id="contactCount">—</strong>
+        </article>
+        </section>
+<section class="portal-card">
+        <h2>Support Tickets</h2>
+        <div class="portal-filters">
+        <div class="form-field">
+        <label for="ticketSearch">Search clients, projects or requests</label>
+        <input id="ticketSearch" name="ticketSearch" type="search" maxlength="254"  required>
+        </div>
+        <div class="form-field">
+        <label for="ticketFilter">Filter by status</label>
+        <select id="ticketFilter">
+        <option value="all">All statuses</option>
+        </select>
+        </div>
+        </div>
+        <p class="form-message" id="supportListStatus" role="status" aria-live="polite">
+        </p>
+        <div class="portal-list" id="supportList">
+        </div>
+        </section>
+<section class="portal-card portal-detail" id="ticketDetail" tabindex="-1" hidden aria-labelledby="ticketDetailTitle">
+        <div class="portal-actions">
+        <button class="secondary-button" id="closeTicket" type="button">Close Details</button>
+        </div>
+        <h2 id="ticketDetailTitle">
+        </h2>
+        <div id="ticketDetailMeta">
+        </div>
+        <p class="portal-details-text" id="ticketDetails">
+        </p>
+        <form class="contact-form" id="ticketAdminForm">
+        <div class="form-row">
+        <div class="form-field">
+        <label for="ticketStatus">Status</label>
+        <select id="ticketStatus" name="ticketStatus" required>
+        </select>
+        </div>
+        <div class="form-field">
+        <label for="ticketPriority">Priority</label>
+        <select id="ticketPriority" name="ticketPriority" required>
+        </select>
+        </div>
+        </div>
+        <button class="submit-button" type="submit">Save Status / Priority</button>
+        <p class="form-message" id="ticketAdminStatus" role="status" aria-live="polite">
+        </p>
+        </form>
+        <h3>Conversation</h3>
+        <div class="portal-conversation" id="ticketMessages" aria-label="Request conversation">
+        </div>
+        <form class="contact-form" id="ticketReplyForm">
+        <div class="form-field">
+        <label for="ticketReply">Message</label>
+        <textarea id="ticketReply" name="ticketReply" maxlength="5000" required>
+        </textarea>
+        </div>
+        <button class="submit-button" type="submit">Send Message</button>
+        <p class="form-message" id="ticketMessageStatus" role="status" aria-live="polite">
+        </p>
+        </form>
+        </section>
+<section class="portal-card"><h2>General Contact Messages</h2><p class="form-message" id="contactListStatus" role="status" aria-live="polite"></p><div class="portal-list" id="contactList"></div></section>
+<section class="portal-card portal-detail" id="contactDetail" tabindex="-1" hidden>
+        <button class="secondary-button" id="closeContact" type="button">Close Message</button>
+        <h2 id="contactTitle">
+        </h2>
+        <div id="contactMeta">
+        </div>
+        <p class="portal-details-text" id="contactBody">
+        </p>
+        <div class="portal-actions">
+        <a class="primary-button" id="contactEmail">Reply by Email</a>
+        <button class="secondary-button" id="closeContactMessage" type="button">Mark Closed</button>
+        </div>
+        <p class="form-message" id="contactActionStatus" role="status" aria-live="polite">
+        </p>
+        </section>
+</main></div><script type="module" src="crm-support.js"></script></body></html>

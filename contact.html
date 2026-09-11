@@ -16,9 +16,10 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Contact SilverForge Digital Solutions about app development, website development or social media services.">
+    <meta name="description" content="Contact SilverForge with general questions, billing questions, partnerships or existing project questions.">
     <title>Contact | SilverForge Digital Solutions</title>
     <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="portal.css">
 </head>
 
 <body>
@@ -37,129 +38,63 @@
                 <a href="portfolio.html">Portfolio</a>
                 <a href="downloads.html">Our Apps</a>
                 <a href="about.html">About</a>
-                <a class="quote-button active" href="contact.html">Request a Quote</a>
+                <a class="active" href="contact.html">Contact</a><a href="customer-login.html">Client Login</a><a class="quote-button" href="quote.html">Request a Quote</a>
             </nav>
         </div>
     </header>
 
     <main>
-        <section class="page-hero">
-            <div class="container page-hero-content">
-                <span class="eyebrow">Contact SilverForge</span>
-                <h1>Tell us what you want to build or promote</h1>
-                <p>
-                    Describe your business, the service you need and what you want the finished project to accomplish.
-                </p>
-            </div>
+<section class="page-hero"><div class="container page-hero-content"><span class="eyebrow">Contact SilverForge</span><h1>How can we help?</h1><p>Contact is separate from project quotes.</p></div></section>
+<section class="section section-dark"><div class="container portal-stack"><div class="card-grid three">
+<article class="card"><h2>New Project Quote</h2><p>Start a new app, website or digital service.</p><a class="primary-button" href="quote.html">Request a Quote</a></article>
+<article class="card">
+        <h2>Existing Client Support</h2>
+        <p>Report a bug, request a change and keep support conversations together.</p>
+        <a class="secondary-button" href="customer-account.html">Open Client Dashboard</a>
+        <p>
+        <a class="text-link" href="customer-login.html">Client Sign In</a>
+        </p>
+        </article>
+<article class="card"><h2>General Contact</h2><p>General, billing, partnership and existing project questions that do not need a support ticket.</p><a class="secondary-button" href="#generalContactForm">Send a General Message</a></article></div>
+<div class="contact-grid"><div><span class="eyebrow">General Contact</span><h2>Send us a message</h2><p>Use this form for questions and business messages. We can respond using the email address you provide.</p></div>
+<form method="post" class="contact-form" id="generalContactForm">
+        <div class="form-field">
+        <label for="name">Your name</label>
+        <input id="name" name="name" type="text" maxlength="120" autocomplete="name" required>
+        </div>
+        <div class="form-field">
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email" maxlength="254" autocomplete="email" required>
+        </div>
+<div class="form-field">
+        <label for="category">Message type</label>
+        <select id="category" name="category" required>
+        <option value="">Choose a message type</option>
+        <option>General Question</option>
+        <option>Billing Question</option>
+        <option>Partnership / Business</option>
+        <option>Existing Project Question</option>
+        <option>Other</option>
+        </select>
+        </div>
+<div class="form-field">
+        <label for="subject">Subject</label>
+        <input id="subject" name="subject" type="text" maxlength="200"  required>
+        </div>
+        <div class="form-field">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" maxlength="5000" required>
+        </textarea>
+        </div>
+        <input class="portal-honey" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button class="submit-button" type="submit" disabled>Send General Message</button>
+        <p class="form-message" id="formMessage" role="status" aria-live="polite">
+        </p>
+        </form>
+        </div>
+        </div>
         </section>
-
-        <section class="section section-dark">
-            <div class="container contact-grid">
-                <div>
-                    <span class="eyebrow">Project information</span>
-                    <h2>Start with the important details</h2>
-                    <p class="lead">
-                        You do not need a complete technical plan. Explain the problem, who the project is for and what you want customers to be able to do.
-                    </p>
-
-                    <div class="contact-details">
-                        <div class="contact-detail">
-                            <strong>App and Website Development</strong>
-                            Custom digital products and business websites.
-                        </div>
-
-                        <div class="contact-detail">
-                            <strong>Social Media Services</strong>
-                            Management, account creation, content, video and advertising.
-                        </div>
-
-                        <div class="contact-detail">
-                            <strong>Custom Project Quotes</strong>
-                            Pricing based on the actual project requirements.
-                        </div>
-                    </div>
-                </div>
-
-                <form class="contact-form" id="contactForm">
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label for="name">Your name</label>
-                            <input id="name" name="name" type="text" autocomplete="name" maxlength="120" required>
-                        </div>
-
-                        <div class="form-field">
-                            <label for="business">Business name</label>
-                            <input id="business" name="business" type="text" autocomplete="organization" maxlength="160" required>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label for="email">Email address</label>
-                            <input id="email" name="email" type="email" autocomplete="email" maxlength="254" required>
-                        </div>
-
-                        <div class="form-field">
-                            <label for="phone">Phone number</label>
-                            <input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="40" required>
-                        </div>
-                    </div>
-
-                    <div class="form-field">
-                        <label for="service">Service needed</label>
-                        <select id="service" name="service" required>
-                            <option value="">Choose a service</option>
-                            <option value="App Development">App Development</option>
-                            <option value="Website Development">Website Development</option>
-                            <option value="Social Media Management">Social Media Management</option>
-                            <option value="Content and Video Creation">Content and Video Creation</option>
-                            <option value="Digital Advertising">Digital Advertising</option>
-                            <option value="Multiple Services">Multiple Services</option>
-                        </select>
-                    </div>
-
-                    <div class="form-field">
-                        <label for="message">Project details</label>
-                        <textarea id="message" name="message" maxlength="5000" placeholder="Tell us about your business and project..." required></textarea>
-                    </div>
-
-                    <button class="submit-button" type="submit">Send Project Request</button>
-                    <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>
-                </form>
-            </div>
-        </section>
-
-        <section class="section">
-            <div class="container">
-                <div class="section-heading">
-                    <span class="eyebrow">What happens next</span>
-                    <h2>A straightforward project conversation</h2>
-                </div>
-
-                <div class="steps">
-                    <div class="step">
-                        <h3>Send Details</h3>
-                        <p>Describe the business and service you need.</p>
-                    </div>
-
-                    <div class="step">
-                        <h3>Review</h3>
-                        <p>We review the project goals and required work.</p>
-                    </div>
-
-                    <div class="step">
-                        <h3>Discuss</h3>
-                        <p>We clarify features, content and expectations.</p>
-                    </div>
-
-                    <div class="step">
-                        <h3>Quote</h3>
-                        <p>You receive a project quote based on the scope.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
+        </main>
 
     <footer>
         <div class="container footer-content">
@@ -175,5 +110,6 @@
     </footer>
 
     <script src="script.js"></script>
+    <script type="module" src="contact.js"></script>
 </body>
 </html>

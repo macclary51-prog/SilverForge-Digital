@@ -3,6 +3,7 @@ import {
     db,
     isFirebaseConfigured
 } from "./firebase-config.js";
+import { quoteSummary } from "./quote-summary.js";
 
 import {
     onAuthStateChanged,
@@ -696,6 +697,7 @@ function subscribeToLeads() {
         (snapshot) => {
             leads = snapshot.docs
                 .map((leadDocument) => ({
+                    customerId: null, // Older leads remain valid and visible to administrators.
                     id: leadDocument.id,
                     ...leadDocument.data()
                 }))
@@ -1278,16 +1280,20 @@ leadForm.addEventListener("submit", async (event) => {
     setLeadFormStatus("Updating lead...");
 
     try {
-        await updateDoc(
-            doc(db, "leads", selectedLeadId),
-            {
+        const lead = getSelectedLead();
+        const changes = {
                 status,
                 quoteAmount: parsedQuote,
                 followUpDate: followUpDate.value,
                 internalNotes: internalNotes.value.trim(),
                 updatedAt: serverTimestamp()
-            }
-        );
+        };
+        const batch = writeBatch(db);
+        batch.update(doc(db, "leads", selectedLeadId), changes);
+        if (lead.customerId) {
+            batch.set(doc(db, "customerQuotes", selectedLeadId), quoteSummary({ ...lead, ...changes }));
+        }
+        await batch.commit();
 
         setLeadFormStatus(
             "Lead updated successfully.",
@@ -1339,6 +1345,7 @@ deleteLeadButton.addEventListener("click", async () => {
         );
 
         batch.delete(doc(db, "leads", selectedLeadId));
+        if (lead?.customerId) batch.delete(doc(db, "customerQuotes", selectedLeadId));
 
         await batch.commit();
         closeDialog();

@@ -21,14 +21,14 @@ service cloud.firestore {
       && data.keys().hasOnly([
         "name","business","email","phone","service","message","status",
         "quoteAmount","followUpDate","internalNotes","createdAt","updatedAt",
-        "lastEmailTemplate","lastEmailSubject","lastEmailBody","lastEmailMarkedSentAt"
+        "lastEmailTemplate","lastEmailSubject","lastEmailBody","lastEmailMarkedSentAt","customerId"
       ]);
     }
 
     function hasOnlyPublicLeadFields(data) {
       return data.keys().hasOnly([
         "name","business","email","phone","service","message","status",
-        "quoteAmount","followUpDate","internalNotes","createdAt","updatedAt"
+        "quoteAmount","followUpDate","internalNotes","createdAt","updatedAt","customerId"
       ]);
     }
 
@@ -121,6 +121,10 @@ service cloud.firestore {
       return hasExpectedLeadFields(data)
         && hasOnlyPublicLeadFields(data)
         && hasValidCustomerFields(data)
+        && data.keys().hasAll(["customerId"])
+        && ((!isSignedIn() && data.customerId == null)
+          || (isSignedIn() && data.customerId == request.auth.uid
+            && data.email == request.auth.token.email))
         && data.status == "new"
         && data.quoteAmount == null
         && data.followUpDate == ""
@@ -244,11 +248,15 @@ service cloud.firestore {
     }
 
     match /leads/{leadId} {
-      allow create: if isValidPublicLead();
+      allow create: if isValidPublicLead() && hasCurrentQuoteSummary(leadId, request.resource.data);
+      // A Firestore read returns every field. Private CRM notes/drafts stay admin-only.
+      // Customers read the strictly validated customerQuotes projection instead.
       allow get, list: if isActiveAdmin();
       allow update: if isActiveAdmin()
-        && (isValidAdminUpdate() || isValidAdminEmailUpdate());
-      allow delete: if isActiveAdmin();
+        && (isValidAdminUpdate() || isValidAdminEmailUpdate())
+        && hasCurrentQuoteSummary(leadId, request.resource.data);
+      allow delete: if isActiveAdmin()
+        && !existsAfter(/databases/$(database)/documents/customerQuotes/$(leadId));
 
       match /communications/{communicationId} {
         allow get, list: if isActiveAdmin();
@@ -274,6 +282,122 @@ service cloud.firestore {
     match /roles/{userUid} {
       allow get: if isSignedIn() && request.auth.uid == userUid;
       allow list, create, update, delete: if false;
+    }
+
+    function validText(value, minimum, maximum) {
+      return value is string && value.size() >= minimum && value.size() <= maximum
+        && (minimum == 0 || value.matches("[\\s\\S]*[^\\s][\\s\\S]*"));
+    }
+
+    function validEmail(value) {
+      return validText(value, 4, 254) && value.matches("^[^@\\s]+@[^@\\s]+[.][^@\\s]+$");
+    }
+
+    function summaryMatches(summary, lead) {
+      return summary.keys().hasAll(["customerId","service","business","status","quoteAmount","createdAt"])
+        && summary.keys().hasOnly(["customerId","service","business","status","quoteAmount","createdAt"])
+        && summary.customerId == lead.customerId
+        && summary["service"] == lead["service"] && summary.business == lead.business
+        && summary.status == lead.status && summary.quoteAmount == lead.quoteAmount
+        && summary.createdAt == lead.createdAt;
+    }
+
+    function hasCurrentQuoteSummary(leadId, lead) {
+      return !lead.keys().hasAny(["customerId"]) || lead.customerId == null
+        || summaryMatches(getAfter(/databases/$(database)/documents/customerQuotes/$(leadId)).data, lead);
+    }
+
+    match /customerQuotes/{leadId} {
+      allow read: if isActiveAdmin()
+        || (isSignedIn() && resource.data.customerId == request.auth.uid);
+      allow create: if isSignedIn()
+        && (isActiveAdmin() || (
+          request.resource.data.customerId == request.auth.uid
+          && !exists(/databases/$(database)/documents/leads/$(leadId))
+          && getAfter(/databases/$(database)/documents/leads/$(leadId)).data.createdAt == request.time
+        ))
+        && summaryMatches(request.resource.data, getAfter(/databases/$(database)/documents/leads/$(leadId)).data);
+      allow update: if isActiveAdmin()
+        && summaryMatches(request.resource.data, getAfter(/databases/$(database)/documents/leads/$(leadId)).data);
+      allow delete: if isActiveAdmin()
+        && !existsAfter(/databases/$(database)/documents/leads/$(leadId));
+    }
+
+    function validContactCreate() {
+      let data = request.resource.data;
+      return data.keys().hasAll(["name","email","category","subject","message","status","createdAt","updatedAt"])
+        && data.keys().hasOnly(["name","email","category","subject","message","status","createdAt","updatedAt"])
+        && validText(data.name, 1, 120) && validEmail(data.email)
+        && data.category in ["General Question","Billing Question","Partnership / Business","Existing Project Question","Other"]
+        && validText(data.subject, 1, 200) && validText(data.message, 1, 5000)
+        && data.status == "new" && data.createdAt == request.time && data.updatedAt == request.time;
+    }
+
+    match /contactMessages/{messageId} {
+      allow create: if validContactCreate();
+      allow read, delete: if isActiveAdmin();
+      allow update: if isActiveAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status","updatedAt"])
+        && request.resource.data.status in ["new","closed"]
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    function ownsTicket(ticket) {
+      return isSignedIn() && ticket.ownerId == request.auth.uid;
+    }
+
+    function validTicketCreate() {
+      let data = request.resource.data;
+      return isSignedIn() && !isActiveAdmin()
+        && data.keys().hasAll(["ownerId","ownerEmail","ownerName","type","projectName","title","details","status","priority","createdAt","updatedAt","lastMessageAt"])
+        && data.keys().hasOnly(["ownerId","ownerEmail","ownerName","type","projectName","title","details","status","priority","createdAt","updatedAt","lastMessageAt"])
+        && data.ownerId == request.auth.uid && data.ownerEmail == request.auth.token.email
+        && validEmail(data.ownerEmail) && validText(data.ownerName, 1, 254)
+        && data.type in ["bug-fix","redesign-change","feature-request","content-update","maintenance","technical-issue","billing","other"]
+        && validText(data.projectName, 1, 160) && validText(data.title, 1, 200) && validText(data.details, 1, 5000)
+        && data.status == "open" && data.priority == "normal"
+        && data.createdAt == request.time && data.updatedAt == request.time && data.lastMessageAt == request.time;
+    }
+
+    function validTicketActivity() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(["updatedAt","lastMessageAt"])
+        && request.resource.data.updatedAt == request.time && request.resource.data.lastMessageAt == request.time;
+    }
+
+    match /supportTickets/{ticketId} {
+      allow create: if validTicketCreate();
+      allow read: if isActiveAdmin() || ownsTicket(resource.data);
+      allow update: if (ownsTicket(resource.data) && !isActiveAdmin() && validTicketActivity())
+        || (isActiveAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status","priority","updatedAt","lastMessageAt"])
+          && request.resource.data.status in ["open","in-review","working","resolved","closed"]
+          && request.resource.data.priority in ["low","normal","high","urgent"]
+          && request.resource.data.updatedAt == request.time
+          && (request.resource.data.lastMessageAt == resource.data.lastMessageAt || request.resource.data.lastMessageAt == request.time));
+      allow delete: if isActiveAdmin();
+
+      match /messages/{messageId} {
+        function parentTicket() {
+          return get(/databases/$(database)/documents/supportTickets/$(ticketId)).data;
+        }
+        function validMessage() {
+          let data = request.resource.data;
+          let afterTicket = getAfter(/databases/$(database)/documents/supportTickets/$(ticketId)).data;
+          return isSignedIn()
+            && exists(/databases/$(database)/documents/supportTickets/$(ticketId))
+            && data.keys().hasAll(["senderId","senderRole","senderName","message","createdAt"])
+            && data.keys().hasOnly(["senderId","senderRole","senderName","message","createdAt"])
+            && data.senderId == request.auth.uid
+            && validText(data.senderName, 1, 254) && validText(data.message, 1, 5000)
+            && data.createdAt == request.time
+            && afterTicket.updatedAt == request.time && afterTicket.lastMessageAt == request.time
+            && ((isActiveAdmin() && data.senderRole == "admin" && data.senderName == "SilverForge")
+              || (!isActiveAdmin() && ownsTicket(parentTicket()) && data.senderRole == "customer"));
+        }
+        allow read: if isActiveAdmin() || ownsTicket(parentTicket());
+        allow create: if validMessage();
+        allow update, delete: if false;
+      }
     }
 
     match /{document=**} {
