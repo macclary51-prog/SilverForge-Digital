@@ -6,6 +6,8 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Lead CRM | SilverForge Digital Solutions</title>
     <link rel="stylesheet" href="crm.css">
+    <link rel="stylesheet" href="portal.css">
+    <link rel="stylesheet" href="client-workspace.css">
 </head>
 
 <body class="crm-page">
@@ -133,7 +135,7 @@
                 <div class="crm-toolbar crm-account-toolbar">
                     <label class="crm-field crm-search-field" for="accountSearch">
                         <span>Search accounts</span>
-                        <input id="accountSearch" type="search" placeholder="Name, email, role, or business ID">
+                        <input id="accountSearch" type="search" placeholder="Name, email, role, or business">
                     </label>
 
                     <label class="crm-field crm-filter-field" for="accountRoleFilter">
@@ -146,6 +148,7 @@
 
                 <p class="crm-status crm-panel-status" id="accountListStatus" role="status" aria-live="polite">Loading accounts...</p>
 
+                <p id="accountWorkspaceStatus" class="crm-status" role="status" aria-live="polite"></p>
                 <div class="crm-account-table-wrap">
                     <table class="crm-account-table">
                         <thead>
@@ -154,8 +157,9 @@
                                 <th>Email</th>
                                 <th>Role</th>
                                 <th>Status</th>
-                                <th>Business ID</th>
+                                <th>Business</th>
                                 <th>Created</th>
+                                <th>Projects</th><th>Open Support</th><th>Unread Messages</th><th>Action</th>
                             </tr>
                         </thead>
                         <tbody id="accountTableBody"></tbody>
@@ -192,6 +196,14 @@
                 <div class="crm-detail-full"><dt>Project details</dt><dd id="detailMessage">—</dd></div>
             </dl>
 
+            <section class="client-link-panel" aria-labelledby="clientLinkTitle">
+                <h3 id="clientLinkTitle">Client account</h3>
+                <p id="leadClientCurrent"></p>
+                <p>Link only after confirming the correct customer. Email matches are never linked automatically.</p>
+                <label class="crm-field" for="leadClientSelect"><span>Select customer account</span><select id="leadClientSelect"></select></label>
+                <div class="client-actions"><button type="button" class="crm-secondary-button" id="linkLeadClient">Link Project to Client</button><button type="button" class="crm-secondary-button" id="unlinkLeadClient">Unlink Client</button></div>
+                <p class="crm-status" id="leadClientStatus" role="status" aria-live="polite"></p>
+            </section>
             <form class="crm-form crm-lead-form" id="leadForm">
                 <div class="crm-section-heading">
                     <div>
@@ -303,6 +315,6 @@
         </div>
     </dialog>
 
-    <script type="module" src="crm.js?v=2"></script>
+    <script type="module" src="crm.js?v=3"></script>
 </body>
 </html>

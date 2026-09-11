@@ -175,3 +175,121 @@ test('admin quote deletion removes its safe summary atomically', async () => {
 test('catch-all denies unknown collections even to admin', async () => {
   await assertFails(setDoc(doc(admin, 'unexpected', 'doc'), { public: true }));
 });
+
+async function directMessage(db, clientId, id, senderId, role, overrides = {}, metadataOverrides = {}) {
+  const ref = doc(db, 'clientConversations', clientId);
+  const previous = await getDoc(ref); const old = previous.data(); const epoch = Timestamp.fromMillis(0);
+  const profile = (await getDoc(doc(db, 'users', clientId))).data();
+  const batch = writeBatch(db);
+  batch.set(doc(ref, 'messages', id), { senderId, senderRole: role, senderName: role === 'admin' ? 'SilverForge' : profile.name,
+    message: 'Direct website message', createdAt: now(), readByAdmin: role === 'admin', readByClient: role === 'customer', ...overrides });
+  batch.set(ref, { clientId, clientName: profile.name, clientEmail: profile.email, createdAt: old?.createdAt || now(), updatedAt: now(), lastMessageAt: now(),
+    lastMessagePreview: 'Direct website message', lastSenderRole: role, lastMessageId: id,
+    lastCustomerMessageAt: role === 'customer' ? now() : (old?.lastCustomerMessageAt || epoch),
+    lastAdminMessageAt: role === 'admin' ? now() : (old?.lastAdminMessageAt || epoch), adminReadAt: old?.adminReadAt || epoch, clientReadAt: old?.clientReadAt || epoch, ...metadataOverrides });
+  return batch.commit();
+}
+test('direct conversations can be started by customer or admin with atomic metadata', async () => {
+  await assertSucceeds(directMessage(alice, 'alice', 'client-first', 'alice', 'customer'));
+  await assertSucceeds(directMessage(admin, 'alice', 'admin-reply', 'admin', 'admin'));
+  await assertSucceeds(setDoc(doc(bob, 'users', 'bob'), { uid: 'bob', name: 'Bob', business: '', email: 'bob@example.com', role: 'customer', status: 'active', createdAt: now(), updatedAt: now() }));
+  await assertSucceeds(directMessage(admin, 'bob', 'admin-first', 'admin', 'admin'));
+  await assertSucceeds(directMessage(bob, 'bob', 'bob-reply', 'bob', 'customer'));
+});
+test('direct conversations and messages are private to UID owner and active admin', async () => {
+  for (const db of [anonymous, bob, inactive]) {
+    await assertFails(getDoc(doc(db, 'clientConversations', 'alice')));
+    await assertFails(getDocs(collection(db, 'clientConversations', 'alice', 'messages')));
+    await assertFails(getDoc(doc(db, 'clientConversations', 'alice', 'messages', 'client-first')));
+  }
+  await assertSucceeds(getDocs(collection(alice, 'clientConversations', 'alice', 'messages')));
+  await assertSucceeds(getDocs(collection(admin, 'clientConversations')));
+  await assertFails(getDocs(collection(alice, 'clientConversations')));
+  await assertFails(getDocs(query(collection(alice, 'clientConversations'), where('clientId', '==', 'alice'))));
+});
+test('direct messages reject impersonation, extra fields, bad text and forged metadata', async () => {
+  await assertFails(directMessage(alice, 'alice', 'spoof-admin', 'alice', 'admin'));
+  await assertFails(directMessage(admin, 'alice', 'spoof-customer', 'admin', 'customer'));
+  for (const changes of [{ senderId: 'bob' }, { senderName: 'Fake Customer' }, { message: ' ' }, { message: 'x'.repeat(5001) }, { extra: true }, { createdAt: Timestamp.fromMillis(0) }, { readByAdmin: true }]) {
+    await assertFails(directMessage(alice, 'alice', 'invalid-direct', 'alice', 'customer', changes));
+  }
+  for (const changes of [{ clientId: 'bob' }, { clientEmail: 'forged@example.com' }, { lastMessagePreview: 'Fake' }, { adminReadAt: now() }, { createdAt: now() }]) {
+    await assertFails(directMessage(alice, 'alice', 'bad-meta', 'alice', 'customer', {}, changes));
+  }
+  await assertFails(updateDoc(doc(alice, 'clientConversations', 'bob'), { lastMessagePreview: 'stolen' }));
+  await assertFails(setDoc(doc(bob, 'clientConversations', 'alice', 'messages', 'intruder'), { senderId: 'bob', senderRole: 'customer', senderName: 'Bob', message: 'Hi', createdAt: now(), readByAdmin: false, readByClient: true }));
+});
+test('conversation metadata cannot be fabricated without a new matching message', async () => {
+  await assertFails(updateDoc(doc(alice, 'clientConversations', 'alice'), { lastMessageAt: now(), updatedAt: now(), lastMessagePreview: 'Fake' }));
+  await assertFails(setDoc(doc(alice, 'clientConversations', 'alice', 'messages', 'no-parent-update'), { senderId: 'alice', senderRole: 'customer', senderName: 'Alice Updated', message: 'Hello', createdAt: now(), readByAdmin: false, readByClient: true }));
+});
+test('read receipts allow only the recipient flag and monotonic read timestamps', async () => {
+  const customerMessage = doc(admin, 'clientConversations', 'alice', 'messages', 'client-first');
+  const adminMessage = doc(alice, 'clientConversations', 'alice', 'messages', 'admin-reply');
+  await assertSucceeds(updateDoc(customerMessage, { readByAdmin: true }));
+  await assertSucceeds(updateDoc(adminMessage, { readByClient: true }));
+  await assertFails(updateDoc(doc(alice, customerMessage.path), { readByAdmin: true }));
+  await assertFails(updateDoc(doc(admin, adminMessage.path), { readByClient: true }));
+  await assertFails(updateDoc(customerMessage, { readByAdmin: false }));
+  await assertFails(updateDoc(adminMessage, { readByClient: false }));
+  const parent = (await getDoc(doc(admin, 'clientConversations', 'alice'))).data();
+  await assertSucceeds(updateDoc(doc(admin, 'clientConversations', 'alice'), { adminReadAt: parent.lastCustomerMessageAt }));
+  await assertSucceeds(updateDoc(doc(alice, 'clientConversations', 'alice'), { clientReadAt: parent.lastAdminMessageAt }));
+  await assertFails(updateDoc(doc(alice, 'clientConversations', 'alice'), { adminReadAt: now() }));
+  await assertFails(updateDoc(doc(admin, 'clientConversations', 'alice'), { adminReadAt: Timestamp.fromMillis(0) }));
+  await assertFails(updateDoc(doc(alice, 'clientConversations', 'alice'), { clientReadAt: now() }));
+});
+test('direct history cannot be changed or deleted by either participant', async () => {
+  for (const db of [alice, admin]) {
+    await assertFails(updateDoc(doc(db, 'clientConversations', 'alice', 'messages', 'client-first'), { message: 'Edited', readByAdmin: true }));
+    await assertFails(deleteDoc(doc(db, 'clientConversations', 'alice', 'messages', 'client-first')));
+    await assertFails(deleteDoc(doc(db, 'clientConversations', 'alice')));
+  }
+});
+test('private notes support admin CRUD but reject all customer and inactive-admin access', async () => {
+  const note = { text: 'Private client note', createdAt: now(), updatedAt: now(), createdBy: 'admin', createdByEmail: 'admin@example.com' };
+  await assertSucceeds(setDoc(doc(admin, 'users', 'alice', 'adminNotes', 'one'), note));
+  await assertSucceeds(updateDoc(doc(admin, 'users', 'alice', 'adminNotes', 'one'), { text: 'Edited private note', updatedAt: now() }));
+  await assertSucceeds(getDocs(collection(admin, 'users', 'alice', 'adminNotes')));
+  for (const db of [alice, bob, inactive, anonymous]) {
+    await assertFails(getDoc(doc(db, 'users', 'alice', 'adminNotes', 'one')));
+    await assertFails(getDocs(collection(db, 'users', 'alice', 'adminNotes')));
+    await assertFails(setDoc(doc(db, 'users', 'alice', 'adminNotes', 'injected'), note));
+    await assertFails(updateDoc(doc(db, 'users', 'alice', 'adminNotes', 'one'), { text: 'Changed', updatedAt: now() }));
+    await assertFails(deleteDoc(doc(db, 'users', 'alice', 'adminNotes', 'one')));
+  }
+  await assertFails(updateDoc(doc(admin, 'users', 'alice', 'adminNotes', 'one'), { createdBy: 'bob', updatedAt: now() }));
+  await assertFails(setDoc(doc(admin, 'users', 'alice', 'adminNotes', 'bad'), { ...note, text: ' ' }));
+  await assertSucceeds(deleteDoc(doc(admin, 'users', 'alice', 'adminNotes', 'one')));
+});
+async function linkWithSummary(db, id, uid) {
+  const previous = (await getDoc(doc(admin, 'leads', id))).data(); const batch = writeBatch(db);
+  batch.update(doc(db, 'leads', id), { customerId: uid, updatedAt: now() });
+  if (uid) batch.set(doc(db, 'customerQuotes', id), quoteSummary({ ...previous, customerId: uid }));
+  else batch.delete(doc(db, 'customerQuotes', id));
+  return batch.commit();
+}
+test('admin explicitly links legacy projects without exposing private fields', async () => {
+  const before = (await getDoc(doc(admin, 'leads', 'legacy'))).data();
+  await assertFails(linkWithSummary(alice, 'legacy', 'alice'));
+  await assertFails(linkWithSummary(inactive, 'legacy', 'alice'));
+  await assertFails(linkWithSummary(admin, 'legacy', 'missing-account'));
+  await assertFails(updateDoc(doc(admin, 'leads', 'legacy'), { customerId: 'alice', updatedAt: now() }));
+  await assertSucceeds(linkWithSummary(admin, 'legacy', 'alice'));
+  const summary = (await assertSucceeds(getDoc(doc(alice, 'customerQuotes', 'legacy')))).data();
+  assert.deepEqual(Object.keys(summary).sort(), ['business','createdAt','customerId','quoteAmount','service','status']);
+  const after = (await getDoc(doc(admin, 'leads', 'legacy'))).data();
+  for (const key of ['internalNotes','lastEmailBody','message','email']) assert.equal(after[key], before[key]);
+  await assertSucceeds(getDoc(doc(admin, 'leads', 'legacy', 'communications', 'email')));
+});
+test('relink and unlink revoke old customer access atomically and preserve leads', async () => {
+  await assertSucceeds(linkWithSummary(admin, 'legacy', 'bob'));
+  await assertFails(getDoc(doc(alice, 'customerQuotes', 'legacy')));
+  await assertSucceeds(getDoc(doc(bob, 'customerQuotes', 'legacy')));
+  await assertFails(updateDoc(doc(admin, 'leads', 'legacy'), { customerId: null, updatedAt: now() }));
+  await assertFails(deleteDoc(doc(admin, 'customerQuotes', 'legacy')));
+  await assertSucceeds(linkWithSummary(admin, 'legacy', null));
+  assert.equal((await getDoc(doc(admin, 'customerQuotes', 'legacy'))).exists(), false);
+  assert.ok((await getDoc(doc(admin, 'leads', 'legacy'))).exists());
+  await assertFails(getDoc(doc(bob, 'leads', 'legacy')));
+});

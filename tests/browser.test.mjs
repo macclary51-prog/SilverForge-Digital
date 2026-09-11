@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdir, readFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
 import { initializeTestEnvironment } from '@firebase/rules-unit-testing';
-import { collection, doc, getDocs, setDoc, Timestamp } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, Timestamp } from 'firebase/firestore';
 import { startPreview } from './preview.mjs';
 
 // Test-only server replacement. The production config is never edited or loaded.
@@ -33,6 +33,7 @@ const server = await startPreview(4174, new Map([['/firebase-config.js', config]
 const browser = await chromium.launch({ channel: process.platform === 'win32' ? 'msedge' : undefined, headless: true });
 const failures = [];
 const successes = [];
+successes.push = function (...items) { items.forEach(item => console.log(`PASS ${item}`)); return Array.prototype.push.apply(this, items); };
 await mkdir(new URL('../test-results/', import.meta.url), { recursive: true });
 async function pageFor(viewport = { width: 1440, height: 1000 }) {
   const context = await browser.newContext({ viewport });
@@ -142,6 +143,113 @@ try {
   await admin.evaluate(() => scrollTo({ top: 0, behavior: 'instant' })); await admin.screenshot({ path: 'test-results/admin-support.png', fullPage: true });
   await admin.setViewportSize({ width: 390, height: 844 }); await noOverflow(admin);
   successes.push('Resolved counts, reopening conversations, mailto replies, closing contacts and responsive dashboards pass.');
+
+  await other.locator('#projectName').fill('Bob Website'); await other.locator('#title').fill('Bob private support'); await other.locator('#details').fill('Only Bob can see this ticket.');
+  await other.locator('#newTicketForm button[type="submit"]').click(); await hasText(other, '#newTicketStatus', 'Support request created');
+  await quoteForm(other, 'Bob');
+  await admin.setViewportSize({ width: 1440, height: 1000 }); await admin.goto(`${base}/crm.html`);
+  await hasText(admin, '#accountTableBody', 'Alice Updated');
+  await admin.locator('#accountSearch').fill('Alice'); await admin.locator('#accountRoleFilter').selectOption('customer');
+  assert.equal(await admin.locator('#accountTableBody tr').count(), 1);
+  await admin.locator('#accountTableBody button').click(); await admin.locator('#clientWorkspace').waitFor({ state: 'visible' });
+  await hasText(admin, '#clientWorkspaceTitle', 'Alice Updated'); await hasText(admin, '#clientProfile', aliceLead.data().customerId);
+  await admin.locator('#clientTab-projects').click(); await hasText(admin, '#clientPanel-projects', 'Alice Business');
+  assert.ok(!(await admin.locator('#clientPanel-projects').textContent()).includes('Bob Business'));
+  assert.equal(await admin.locator('#clientPanel-projects .client-project').count(), 1);
+  await admin.locator('#clientPanel-projects button').click(); await hasText(admin, '#leadDialogTitle', 'Alice');
+  await admin.locator('#closeLeadDialog').click(); assert.ok(await admin.locator('#clientWorkspace').isVisible());
+  await admin.locator('#clientTab-support').click(); await hasText(admin, '#clientPanel-support', 'Save button is broken');
+  await hasText(admin, '#clientPanel-support', 'I reopened this conversation later.');
+  assert.ok(!(await admin.locator('#clientPanel-support').textContent()).includes('Bob private support'));
+  await admin.locator('#clientPanel-support a').click(); await hasText(admin, '#ticketDetailTitle', 'Save button is broken');
+  await admin.getByRole('link', { name: 'Back to Client Workspace' }).click(); await hasText(admin, '#clientWorkspaceTitle', 'Alice Updated');
+  successes.push('Created Accounts search/filter and Open Client use the correct UID; project editor and support conversation reuse existing views with return navigation.');
+
+  await admin.locator('#clientTab-messages').click(); await admin.locator('#clientMessageText').fill('Your homepage is ready for review.');
+  await admin.locator('#clientMessageForm button[type="submit"]').click(); await hasText(admin, '#clientSendStatus', 'Website message sent');
+  await hasText(client, '#clientUnreadCount', '1'); await client.locator('#toggleClientMessages').click();
+  await hasText(client, '#dashboardMessageList', 'Your homepage is ready for review.'); await hasText(client, '#clientUnreadCount', '0'); await hasText(admin, '#clientMessages', 'Read');
+  await admin.locator('#clientTab-overview').click();
+  await client.locator('#dashboardMessageText').fill('Can we update the homepage heading? <script>alert("x")</script>');
+  await client.locator('#dashboardMessageForm button[type="submit"]').click(); await hasText(client, '#dashboardSendStatus', 'Website message sent');
+  await hasText(admin, '#accountTableBody', 'New'); await hasText(admin, '#clientTabUnread', '1 unread');
+  await admin.locator('#clientTab-messages').click(); await hasText(admin, '#clientMessages', 'update the homepage heading');
+  await admin.waitForFunction(() => !document.querySelector('#clientTabUnread').textContent.includes('unread'));
+  assert.equal(await admin.locator('#clientMessages script').count(), 0); await hasText(client, '#dashboardMessageList', 'Read');
+  assert.ok(!(await other.locator('body').textContent()).includes('homepage heading'));
+  successes.push('Website messages and replies arrive live; dashboard, account list and workspace unread indicators clear on opening, with safe text rendering and read receipts.');
+
+  await admin.evaluate(() => {
+    window.testMailDrafts = [];
+    document.addEventListener('click', event => { const link = event.target.closest('a[href^="mailto:"]'); if (link) { event.preventDefault(); window.testMailDrafts.push(link.href); } }, true);
+  });
+  const directPath = ['clientConversations', aliceLead.data().customerId, 'messages'];
+  const messageCount = (await getDocs(collection(adminDb, ...directPath))).size;
+  const emailText = 'Review notes & next steps\nUse our current homepage.';
+  await admin.locator('#clientMessageText').fill(emailText); await admin.locator('#clientSendEmail').click(); await hasText(admin, '#clientSendStatus', 'Email draft opened');
+  assert.equal((await getDocs(collection(adminDb, ...directPath))).size, messageCount);
+  let mail = new URL(await admin.evaluate(() => window.testMailDrafts.at(-1)));
+  assert.equal(decodeURIComponent(mail.pathname), 'alice-browser@example.com'); assert.equal(mail.searchParams.get('body'), emailText);
+  await admin.locator('#clientSendBoth').click(); await hasText(admin, '#clientSendStatus', 'Website message saved');
+  assert.equal((await getDocs(collection(adminDb, ...directPath))).size, messageCount + 1);
+  assert.equal(new URL(await admin.evaluate(() => window.testMailDrafts.at(-1))).searchParams.get('body'), emailText);
+  await hasText(client, '#dashboardMessageList', 'Review notes & next steps');
+  // Inject a denied commit at the emulator boundary; no email draft may open after failure.
+  const mailCount = await admin.evaluate(() => window.testMailDrafts.length);
+  const beforeExpectedFailure = failures.length;
+  let deniedCommits = 0;
+  const commitUrl = /127\.0\.0\.1:8080\/.*documents:commit/;
+  await admin.route(commitUrl, route => {
+    deniedCommits++;
+    return route.fulfill({ status: 403, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': base, 'Access-Control-Allow-Credentials': 'true' }, body: JSON.stringify({ error: { code: 403, status: 'PERMISSION_DENIED', message: 'Test-only denied message save' } }) });
+  });
+  await admin.locator('#clientMessageText').fill('Preserve this text after a failed save.'); await admin.locator('#clientSendBoth').click(); await hasText(admin, '#clientSendStatus', 'Message could not be sent');
+  assert.equal(await admin.evaluate(() => window.testMailDrafts.length), mailCount); assert.equal(await admin.locator('#clientMessageText').inputValue(), 'Preserve this text after a failed save.');
+  assert.ok(deniedCommits > 0, 'The test must actually deny a website commit');
+  const expectedErrors = failures.splice(beforeExpectedFailure);
+  assert.ok(expectedErrors.some(text => text.startsWith('Client message action failed:')));
+  assert.ok(expectedErrors.every(text => text.startsWith('Client message action failed:') || text.includes('403') || text.includes('Test-only denied message save')), JSON.stringify(expectedErrors));
+  await admin.unroute(commitUrl);
+  successes.push('Email-only opens an encoded account-email draft without writing a website message; Website + Email saves the same text first; failed website saves retain text and never open email.');
+
+  await admin.locator('#clientTab-notes').click(); await admin.locator('#clientNoteText').fill('PRIVATE: Prefers a callback Friday.'); await admin.locator('#clientSaveNote').click(); await hasText(admin, '#clientNoteStatus', 'Private note saved');
+  await hasText(admin, '#clientNotesList', 'callback Friday');
+  assert.ok(!(await client.locator('body').textContent()).includes('PRIVATE:')); assert.ok(!(await admin.locator('#clientMessages').textContent()).includes('PRIVATE:'));
+  await admin.locator('#clientNotesList').getByRole('button', { name: 'Edit Note' }).click(); await admin.locator('#clientNoteText').fill('PRIVATE: Callback moved to Monday.'); await admin.locator('#clientSaveNote').click(); await hasText(admin, '#clientNotesList', 'moved to Monday');
+  await admin.locator('#clientTab-activity').click(); await hasText(admin, '#clientPanel-activity', 'Private note added'); await hasText(admin, '#clientPanel-activity', 'Website message received');
+  await admin.screenshot({ path: 'test-results/client-workspace-activity.png', fullPage: true });
+  await admin.locator('#clientTab-notes').click(); admin.once('dialog', dialog => dialog.accept()); await admin.locator('#clientNotesList').getByRole('button', { name: 'Delete Note' }).click(); await hasText(admin, '#clientNoteStatus', 'Note deleted');
+  assert.equal((await getDocs(collection(adminDb, 'users', aliceLead.data().customerId, 'adminNotes'))).size, 0);
+  successes.push('Private notes can be added, edited and deleted with attribution; private notes never enter customer HTML or portal messages; activity shows available account/project/support/message/note events.');
+
+  await admin.locator('#closeClientWorkspace').click(); await admin.locator('#leadSearch').fill('Legacy Fixture'); await admin.locator('#leadList button').click();
+  await hasText(admin, '#leadClientCurrent', 'No client account linked');
+  await admin.locator('#leadClientSelect').selectOption(aliceLead.data().customerId);
+  admin.once('dialog', dialog => dialog.dismiss()); await admin.locator('#linkLeadClient').click();
+  assert.ok(!(await getDoc(doc(adminDb, 'leads', 'legacy-browser'))).data().customerId);
+  admin.once('dialog', dialog => dialog.accept()); await admin.locator('#linkLeadClient').click(); await hasText(admin, '#leadClientStatus', 'Project linked');
+  await hasText(client, '#myQuotes', 'Legacy Business'); assert.ok(!(await client.locator('body').textContent()).includes('Private legacy note'));
+  admin.once('dialog', dialog => dialog.accept()); await admin.locator('#unlinkLeadClient').click(); await hasText(admin, '#leadClientStatus', 'Client unlinked');
+  await client.waitForFunction(() => !document.querySelector('#myQuotes').textContent.includes('Legacy Business'));
+  assert.equal((await getDoc(doc(adminDb, 'leads', 'legacy-browser'))).data().internalNotes, 'Private legacy note');
+  await admin.locator('#closeLeadDialog').click();
+  successes.push('Legacy leads are never matched by email; Link Project requires confirmation and atomically publishes a safe summary; Unlink removes client visibility and preserves the original lead.');
+
+  await admin.locator('#accountSearch').fill('Alice'); await admin.locator('#accountTableBody button').click(); await admin.locator('#clientTab-overview').click(); await noOverflow(admin);
+  await admin.screenshot({ path: 'test-results/client-workspace-desktop.png', fullPage: true });
+  await admin.setViewportSize({ width: 390, height: 844 }); await noOverflow(admin);
+  assert.ok(await admin.locator('#clientWorkspace').evaluate(node => node.scrollWidth <= node.clientWidth));
+  await admin.screenshot({ path: 'test-results/client-workspace-mobile.png', fullPage: true });
+  await admin.locator('#closeClientWorkspace').click(); await admin.locator('#accountCardList button').click(); await hasText(admin, '#clientWorkspaceTitle', 'Alice Updated');
+  await admin.locator('#closeClientWorkspace').click();
+  // Missing account email must never be guessed from a lead or another account.
+  await env.withSecurityRulesDisabled(ctx => setDoc(doc(ctx.firestore(), 'users', 'missing-email'), { uid: 'missing-email', name: 'Missing Email', business: '', email: '', role: 'customer', status: 'active', createdAt: Timestamp.now(), updatedAt: Timestamp.now() }));
+  await admin.locator('#accountSearch').fill('Missing Email'); await hasText(admin, '#accountCardList', 'Missing Email'); await admin.locator('#accountCardList button').click();
+  await hasText(admin, '#clientEmailWarning', 'No valid customer email is available.'); await admin.locator('#clientTab-messages').click();
+  assert.ok(await admin.locator('#clientSendEmail').isDisabled()); assert.ok(await admin.locator('#clientSendBoth').isDisabled());
+  await admin.locator('#closeClientWorkspace').click();
+  successes.push('Desktop table and 390px mobile cards/workspace fit their viewports; missing-email clients have disabled email actions with the required explanation.');
+
   await other.goto(`${base}/crm-support.html`); await other.waitForURL('**/crm-login.html?reason=unauthorized');
   const signedOut = await pageFor(); await signedOut.goto(`${base}/customer-account.html`); await signedOut.waitForURL('**/customer-login.html');
   successes.push('Customer support inbox access and unauthenticated dashboard access are blocked.');

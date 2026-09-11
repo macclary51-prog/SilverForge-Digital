@@ -1,5 +1,5 @@
 import { auth, db, isFirebaseConfigured } from "./firebase-config.js";
-import { startCustomerDashboard } from "./customer-dashboard.js";
+import { startCustomerDashboard } from "./customer-dashboard.js?v=2";
 
 import {
   createUserWithEmailAndPassword,

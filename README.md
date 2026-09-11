@@ -148,3 +148,47 @@ customerId
 ```
 
 `customerId` is the authenticated UID for signed-in submissions and `null` for anonymous submissions. Legacy leads may omit it. Existing administrator email fields and the `communications` subcollection are retained.
+
+## Client workspaces and direct messages
+
+In **Created accounts**, use **Open Client** to open the large workspace in the Lead CRM. Its Overview, Projects, Messages, Support, Private Notes and Activity tabs use the Firestore user document ID as the client UID. Search, role filtering, desktop tables and mobile cards remain available. Active project counts include accepted and in-progress work; open support includes open, in-review and working requests.
+
+- `client-workspace.js` connects the existing accounts, leads, support inbox and private notes. Project cards open the existing lead editor. Support links open the existing conversation and provide a return link to the client workspace.
+- `client-messages.js` provides direct website conversations, recipient read receipts and email drafts for the CRM and customer dashboard. This is separate from support tickets and general contact.
+- `client-workspace.css` extends the current CRM and portal styling.
+
+### Explicit project ownership
+
+The lead editor offers **Link Project to Client** and **Unlink Client** with confirmation. No background matching by email occurs. Linking/relinking changes only `customerId` and `updatedAt`, and writes the exact `quote-summary.js` allowlist into `customerQuotes` in the same transaction. Unlinking deletes that projection in the transaction, revoking dashboard access while preserving the original lead and its private notes/email history. Customers still cannot read raw leads.
+
+### Conversation storage and security
+
+`clientConversations/{clientUid}` contains `clientId`, `clientName`, `clientEmail`, `createdAt`, `updatedAt`, `lastMessageAt`, `lastMessagePreview`, `lastSenderRole` and `lastMessageId`. It also stores `lastCustomerMessageAt`, `lastAdminMessageAt`, `adminReadAt` and `clientReadAt` for account-list unread indicators. The preview retains the message text, bounded to 5,000 characters; UI previews truncate it.
+
+`clientConversations/{clientUid}/messages/{messageId}` contains `senderId`, `senderRole`, `senderName`, `message`, `createdAt`, `readByAdmin` and `readByClient`. Rules require messages and matching metadata to be written atomically. Transactions preserve concurrent messages and read state. Each customer can get only their own parent document and list only its messages; parent collection queries are admin-only. Sender ID/role/name are validated against Auth and the account profile. Message content and history cannot be edited or deleted. The recipient alone can change their read flag to true. Read timestamps move forward only as far as the latest incoming message; opening a conversation marks the loaded incoming messages read.
+
+Unread counts in the selected workspace/dashboard are exact message counts. The Created Accounts list uses a **New** indicator derived from conversation timestamps. Direct message history is loaded only for the selected client; the CRM subscribes to conversation metadata for account indicators. No collection-group query, extra index, paid backend or migration is required. Very large histories may eventually benefit from pagination.
+
+### Private notes and activity
+
+`users/{clientUid}/adminNotes/{noteId}` contains `text`, `createdAt`, `updatedAt`, `createdBy` and `createdByEmail`. Only an active `roles/{uid}` administrator can read or perform CRUD. Edits preserve original author/time. These notes never enter customer messages, quotes, emails or the customer dashboard.
+
+Activity is an admin-only view assembled from existing timestamps. It shows account creation, project submissions/latest updates, marked-sent lead emails, support creation/latest updates, website messages and note creation/edits. It does not claim historical status transitions or retain deleted-note events.
+
+### Email behavior
+
+**Send Email** opens a `mailto:` draft using the account profile email and current composer text. **Send Website + Email** first awaits the website message transaction, then opens an identical draft. A failed website save keeps the text and opens no email. Missing or invalid account email disables email actions and explains why. The email application must be configured on the administrator's device; the administrator sends the draft there. Email opening/delivery is not confirmed by the website, and no SMTP credentials, mail API secrets or server keys are used. Existing lead email templates and marked-sent history are unchanged.
+
+### Validation and deployment
+
+`npm test` includes 28 Firestore security tests and browser flows for the existing portal plus workspace selection, scoped projects/support, direct messaging, unread/read state, email-only and combined drafts, rejected-save handling, private note CRUD, confirmed legacy linking/unlinking and desktop/mobile layouts. Email-launch tests intercept `mailto:` links and inspect their contents without sending email or opening a real mail application. All test data stays in `demo-silverforge` emulators.
+
+Verify the Firebase project is **silverforge-digital** (project number **684696359962**) before deploying rules. This checkout has no `.firebaserc`; explicitly pin the existing project:
+
+```powershell
+firebase deploy --only firestore:rules --project silverforge-digital --non-interactive
+```
+
+Deploy no other Firebase services for this feature. If CLI authentication is missing, publish the repository's complete `firestore.rules` in Firebase Console → Firestore Database → Rules instead. Website files use the existing GitHub Pages release process.
+
+The atomic-write design follows Firebase's [transaction guidance](https://firebase.google.com/docs/firestore/manage-data/transactions) and [rule validation using getAfter](https://firebase.google.com/docs/firestore/security/rules-conditions).
