@@ -7,6 +7,7 @@ const status = $("formMessage");
 const button = form.querySelector('button[type="submit"]');
 if (!isFirebaseConfigured || !db) {
   button.disabled = true;
+  console.error("General contact Firebase configuration is incomplete or Firestore is unavailable.");
   message(status, "Contact is temporarily unavailable. Please try again later.", "error");
 } else { button.disabled = false; }
 form.addEventListener("submit", async (event) => {
@@ -24,7 +25,10 @@ form.addEventListener("submit", async (event) => {
     await addDoc(collection(db, "contactMessages"), { ...data, status: "new", createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
     form.reset();
     message(status, "Thank you. Your general contact message has been sent.", "success");
-  } catch {
+  } catch (error) {
+    console.error("General contact submission failed:", error);
+    console.error("Firebase error code:", error?.code);
+    console.error("Firebase error message:", error?.message);
     message(status, "Your message could not be sent. Please try again.", "error");
   } finally { button.disabled = false; }
 });
