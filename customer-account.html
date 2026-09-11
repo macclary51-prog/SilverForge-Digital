@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="style.css?v=4">
   <link rel="stylesheet" href="customer-account.css?v=1">
   <link rel="stylesheet" href="portal.css">
+  <link rel="stylesheet" href="client-workspace.css">
 </head>
 
 <body data-customer-page="account">
@@ -152,6 +153,10 @@
         <strong id="resolvedTicketsCount">—</strong>
         </article>
         <article>
+        <span>Unread Messages</span>
+        <strong id="clientUnreadCount">—</strong>
+        </article>
+        <article>
         <span>Account Status</span>
         <strong id="dashboardAccountStatus">—</strong>
         </article>
@@ -161,6 +166,7 @@
         <div class="portal-actions">
         <a class="primary-button" href="#newTicketForm">Report Bug / Request Change</a>
         <a class="secondary-button" href="quote.html">Request New Project Quote</a>
+        <a class="secondary-button" href="#dashboardMessages">Messages</a>
         <a class="secondary-button" href="contact.html">General Contact</a>
         </div>
         </div>
@@ -170,6 +176,16 @@
         <p class="form-message" id="myQuotesStatus" role="status" aria-live="polite">
         </p>
         <div class="portal-list" id="myQuotes">
+        </div>
+        </section>
+<section class="portal-card" id="dashboardMessages">
+        <h2>Messages</h2><p>Talk directly with SilverForge about your projects. Use Support Requests below for bugs or technical changes.</p>
+        <button type="button" class="secondary-button" id="toggleClientMessages" aria-expanded="false" aria-controls="dashboardConversation">Open Conversation</button>
+        <p class="form-message" id="dashboardUnread" role="status" aria-live="polite"></p>
+        <div id="dashboardConversation" hidden>
+          <div class="client-conversation" id="dashboardMessageList" aria-label="Conversation with SilverForge"></div>
+          <p class="form-message" id="dashboardMessageStatus" role="status"></p>
+          <form class="contact-form" id="dashboardMessageForm"><div class="form-field"><label for="dashboardMessageText">Message SilverForge</label><textarea id="dashboardMessageText" rows="5" maxlength="5000" required></textarea></div><button type="submit" class="submit-button">Send Website Message</button><p class="form-message" id="dashboardSendStatus" role="status" aria-live="polite"></p></form>
         </div>
         </section>
 <div class="portal-grid"><section class="portal-card"><h2>Support / Change Requests</h2><p class="form-message" id="myTicketsStatus" role="status" aria-live="polite"></p><div class="portal-list" id="myTickets"></div></section>
@@ -534,7 +550,7 @@
 
   <script
     type="module"
-    src="customer-auth.js?v=2"
+    src="customer-auth.js?v=3"
   ></script>
 
 </body>

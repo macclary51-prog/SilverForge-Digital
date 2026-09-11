@@ -4,6 +4,9 @@ import { collection, doc, onSnapshot, serverTimestamp, updateDoc } from "https:/
 import { $, conversation, date, element, message, metadata, millis, options, ticketPriorities, ticketStatuses, ticketTypes } from "./portal-shared.js";
 
 let user = null;
+let requestedTicket = new URLSearchParams(location.search).get("ticket");
+const returnClient = new URLSearchParams(location.search).get("client");
+if (returnClient) { const back = element("a", "Back to Client Workspace", "secondary-button"); back.href = `crm.html?client=${encodeURIComponent(returnClient)}`; $("supportApp").prepend(back); }
 let tickets = [];
 let contacts = [];
 let selectedId = "";
@@ -81,6 +84,7 @@ function subscribe() {
     $("workingCount").textContent = tickets.filter(t => t.status === "working").length;
     $("resolvedCount").textContent = tickets.filter(t => t.status === "resolved").length;
     renderTickets();
+    if (requestedTicket) { const id = requestedTicket; requestedTicket = null; openTicket(id); }
     if (selectedId) { const ticket = tickets.find(t => t.id === selectedId); if (ticket) detail(ticket); else closeTicket(); }
   }, error => { if (error.code === "permission-denied") deny(); else message($("supportListStatus"), "Support requests could not be loaded. Refresh to retry.", "error"); }));
   subscriptions.push(onSnapshot(collection(db, "contactMessages"), snapshot => {

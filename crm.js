@@ -4,6 +4,7 @@ import {
     isFirebaseConfigured
 } from "./firebase-config.js";
 import { quoteSummary } from "./quote-summary.js";
+import { createClientWorkspace, linkProjectToClient } from "./client-workspace.js";
 
 import {
     onAuthStateChanged,
@@ -115,6 +116,9 @@ let unsubscribeAccounts = null;
 let unsubscribeCommunications = null;
 let authorizedUid = "";
 let pendingRedirectReason = "";
+let stopWorkspaceRole = () => {};
+let linkingClient = false;
+const workspace = createClientWorkspace({ getAccounts: () => accounts, getLeads: () => leads, openLead, onMetrics: renderAccounts });
 
 function redirectToLogin(reason = "") {
     const search = reason ? `?reason=${encodeURIComponent(reason)}` : "";
@@ -410,6 +414,7 @@ function getFilteredAccounts() {
             normalizeAccountName(account),
             account.email,
             role,
+            account.business,
             account.businessId,
             normalizeAccountStatus(account)
         ]
@@ -460,7 +465,8 @@ function renderAccounts() {
         const email = String(account.email || "No email");
         const role = normalizeAccountRole(account);
         const status = normalizeAccountStatus(account);
-        const businessId = String(account.businessId || "—");
+        const businessId = String(account.business || account.businessId || "—");
+        const metrics = workspace.accountMetrics(account.id);
         const created = formatAccountDate(account.createdAt);
 
         const row = document.createElement("tr");
@@ -488,6 +494,19 @@ function renderAccounts() {
             createdCell
         );
 
+        for (const value of [metrics.projects, metrics.support, metrics.unread]) {
+            const cell = document.createElement("td"); cell.textContent = String(value);
+            if (value === "New") cell.className = "client-unread";
+            row.append(cell);
+        }
+        const actionCell = document.createElement("td");
+        const clientButton = () => {
+            const button = document.createElement("button"); button.type = "button";
+            button.className = "crm-secondary-button"; button.textContent = "Open Client";
+            button.addEventListener("click", () => workspace.open(account.id)); return button;
+        };
+        if (role === "customer") actionCell.append(clientButton());
+        row.append(actionCell);
         accountTableBody.appendChild(row);
 
         const card = document.createElement("article");
@@ -511,11 +530,15 @@ function renderAccounts() {
         meta.className = "crm-account-card-meta";
         meta.append(
             createMetaItem("Role", role.replaceAll("-", " ")),
-            createMetaItem("Business ID", businessId),
+            createMetaItem("Business", businessId),
+            createMetaItem("Projects", String(metrics.projects)),
+            createMetaItem("Open Support", String(metrics.support)),
+            createMetaItem("Unread Messages", String(metrics.unread)),
             createMetaItem("Created", created)
         );
 
         card.append(top, meta);
+        if (role === "customer") card.append(clientButton());
         accountCardList.appendChild(card);
     });
 }
@@ -627,6 +650,8 @@ function openLead(leadId) {
     if (!lead) return;
 
     selectedLeadId = lead.id;
+    populateClientLink(true);
+    document.getElementById("leadClientStatus").textContent = "";
 
     leadDialogTitle.textContent = lead.name || "Lead details";
 
@@ -698,8 +723,8 @@ function subscribeToLeads() {
             leads = snapshot.docs
                 .map((leadDocument) => ({
                     customerId: null, // Older leads remain valid and visible to administrators.
-                    id: leadDocument.id,
-                    ...leadDocument.data()
+                    ...leadDocument.data(),
+                    id: leadDocument.id
                 }))
                 .sort(
                     (a, b) =>
@@ -716,6 +741,9 @@ function subscribeToLeads() {
 
             updateSummary();
             renderLeadList();
+            renderAccounts();
+            workspace.refresh();
+            if (selectedLeadId) updateClientLinkLabel();
         },
         async (error) => {
             console.error("Lead subscription failed:", error);
@@ -745,8 +773,8 @@ function subscribeToAccounts() {
         (snapshot) => {
             accounts = snapshot.docs
                 .map((accountDocument) => ({
-                    id: accountDocument.id,
-                    ...accountDocument.data()
+                    ...accountDocument.data(),
+                    id: accountDocument.id
                 }))
                 .sort(
                     (a, b) =>
@@ -756,6 +784,8 @@ function subscribeToAccounts() {
 
             populateAccountRoleFilter();
             renderAccounts();
+            workspace.refresh();
+            if (selectedLeadId) populateClientLink();
         },
         (error) => {
             console.error("Account subscription failed:", error);
@@ -1044,6 +1074,43 @@ function validatePreparedEmail(requireRecipient = false) {
 
 leadSearch.addEventListener("input", renderLeadList);
 statusFilter.addEventListener("change", renderLeadList);
+
+function updateClientLinkLabel() {
+    const lead = getSelectedLead(); const account = accounts.find(item => item.id === lead?.customerId);
+    document.getElementById("leadClientCurrent").textContent = lead?.customerId
+        ? "Linked to " + (account ? normalizeAccountName(account) : "customer") + " · UID: " + lead.customerId : "No client account linked.";
+    document.getElementById("unlinkLeadClient").disabled = linkingClient || !lead?.customerId;
+}
+function populateClientLink(reset = false) {
+    const select = document.getElementById("leadClientSelect"); const previous = reset ? "" : select.value;
+    select.replaceChildren(new Option("Select an existing customer", ""));
+    accounts.filter(account => normalizeAccountRole(account) === "customer").forEach(account => {
+        select.append(new Option(normalizeAccountName(account) + " · " + (account.email || "No email") + " · " + account.id, account.id));
+    });
+    select.value = accounts.some(account => account.id === previous) ? previous : (getSelectedLead()?.customerId || "");
+    updateClientLinkLabel();
+}
+async function changeClientLink(unlink = false) {
+    if (linkingClient || !selectedLeadId) return;
+    const id = selectedLeadId; const clientId = unlink ? null : document.getElementById("leadClientSelect").value;
+    const status = document.getElementById("leadClientStatus");
+    const account = accounts.find(item => item.id === clientId);
+    if (!unlink && !account) { status.textContent = "Select an existing customer account."; status.dataset.state = "error"; return; }
+    const question = unlink ? "Unlink this project and remove it from the customer's dashboard? The original lead and private history will be preserved."
+        : "Link this project to " + normalizeAccountName(account) + " (" + (account.email || "no email") + ")? Confirm UID: " + clientId + ". Its safe quote summary will become visible to this customer.";
+    if (!window.confirm(question)) return;
+    linkingClient = true; document.getElementById("linkLeadClient").disabled = true; document.getElementById("unlinkLeadClient").disabled = true;
+    status.textContent = "Updating client link..."; status.dataset.state = "";
+    try {
+        await linkProjectToClient(id, clientId);
+        if (selectedLeadId === id) { status.textContent = unlink ? "Client unlinked." : "Project linked to client."; status.dataset.state = "success"; }
+    } catch (error) {
+        console.error("Project client link failed:", error);
+        if (selectedLeadId === id) { status.textContent = "Client link could not be updated. The project was not changed."; status.dataset.state = "error"; }
+    } finally { linkingClient = false; document.getElementById("linkLeadClient").disabled = false; updateClientLinkLabel(); }
+}
+document.getElementById("linkLeadClient").addEventListener("click", () => void changeClientLink());
+document.getElementById("unlinkLeadClient").addEventListener("click", () => void changeClientLink(true));
 
 accountSearch.addEventListener("input", renderAccounts);
 accountRoleFilter.addEventListener("change", renderAccounts);
@@ -1363,6 +1430,7 @@ deleteLeadButton.addEventListener("click", async () => {
 });
 
 signOutButton.addEventListener("click", async () => {
+    workspace.stop(); stopWorkspaceRole();
     signOutButton.disabled = true;
     signOutButton.textContent = "Signing out...";
 
@@ -1422,6 +1490,14 @@ if (!isFirebaseConfigured || !auth || !db) {
 
                 subscribeToLeads();
                 subscribeToAccounts();
+                workspace.start();
+                stopWorkspaceRole();
+                stopWorkspaceRole = onSnapshot(doc(db, "roles", user.uid), snapshot => {
+                    const role = snapshot.data();
+                    if (role?.role !== "admin" || role?.active !== true) {
+                        workspace.stop(); closeDialog(); crmApp.hidden = true; redirectToLogin("unauthorized");
+                    }
+                }, () => { workspace.stop(); closeDialog(); crmApp.hidden = true; redirectToLogin("unauthorized"); });
             } catch (error) {
                 console.error("CRM authorization failed:", error);
                 pendingRedirectReason = "unauthorized";
@@ -1436,6 +1512,7 @@ if (!isFirebaseConfigured || !auth || !db) {
 }
 
 window.addEventListener("beforeunload", () => {
+    workspace.stop(); stopWorkspaceRole();
     if (unsubscribeLeads) {
         unsubscribeLeads();
     }

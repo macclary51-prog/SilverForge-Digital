@@ -159,6 +159,15 @@ service cloud.firestore {
         ]);
     }
 
+    // Linking changes ownership only; all existing lead content is preserved.
+    function isValidClientLink() {
+      let data = request.resource.data;
+      return data.diff(resource.data).affectedKeys().hasOnly(["customerId", "updatedAt"])
+        && data.updatedAt == request.time
+        && (data.customerId == null || (validText(data.customerId, 1, 128)
+          && get(/databases/$(database)/documents/users/$(data.customerId)).data.role == "customer"));
+    }
+
     function isValidEmailCommunication() {
       let data = request.resource.data;
       return data.keys().hasAll([
@@ -253,7 +262,7 @@ service cloud.firestore {
       // Customers read the strictly validated customerQuotes projection instead.
       allow get, list: if isActiveAdmin();
       allow update: if isActiveAdmin()
-        && (isValidAdminUpdate() || isValidAdminEmailUpdate())
+        && (isValidAdminUpdate() || isValidAdminEmailUpdate() || isValidClientLink())
         && hasCurrentQuoteSummary(leadId, request.resource.data);
       allow delete: if isActiveAdmin()
         && !existsAfter(/databases/$(database)/documents/customerQuotes/$(leadId));
@@ -303,8 +312,10 @@ service cloud.firestore {
     }
 
     function hasCurrentQuoteSummary(leadId, lead) {
-      return !lead.keys().hasAny(["customerId"]) || lead.customerId == null
-        || summaryMatches(getAfter(/databases/$(database)/documents/customerQuotes/$(leadId)).data, lead);
+      return ((!lead.keys().hasAny(["customerId"]) || lead.customerId == null)
+          && !existsAfter(/databases/$(database)/documents/customerQuotes/$(leadId)))
+        || (lead.get("customerId", null) != null
+          && summaryMatches(getAfter(/databases/$(database)/documents/customerQuotes/$(leadId)).data, lead));
     }
 
     match /customerQuotes/{leadId} {
@@ -320,7 +331,106 @@ service cloud.firestore {
       allow update: if isActiveAdmin()
         && summaryMatches(request.resource.data, getAfter(/databases/$(database)/documents/leads/$(leadId)).data);
       allow delete: if isActiveAdmin()
-        && !existsAfter(/databases/$(database)/documents/leads/$(leadId));
+        && (!existsAfter(/databases/$(database)/documents/leads/$(leadId))
+          || getAfter(/databases/$(database)/documents/leads/$(leadId)).data.get("customerId", null) == null);
+    }
+
+    match /users/{clientUid}/adminNotes/{noteId} {
+      function validNote() {
+        let data = request.resource.data;
+        return data.keys().hasAll(["text", "createdAt", "updatedAt", "createdBy", "createdByEmail"])
+          && data.keys().hasOnly(["text", "createdAt", "updatedAt", "createdBy", "createdByEmail"])
+          && validText(data.text, 1, 10000) && data.updatedAt == request.time;
+      }
+      allow read, delete: if isActiveAdmin();
+      allow create: if isActiveAdmin() && validNote()
+        && get(/databases/$(database)/documents/users/$(clientUid)).data.role == "customer"
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdByEmail == request.auth.token.email
+        && request.resource.data.createdAt == request.time;
+      allow update: if isActiveAdmin() && validNote()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["text", "updatedAt"]);
+    }
+
+    function isConversationClient(clientUid) {
+      return isSignedIn() && request.auth.uid == clientUid && !isActiveAdmin()
+        && get(/databases/$(database)/documents/users/$(clientUid)).data.role == "customer";
+    }
+
+    match /clientConversations/{clientUid} {
+      function participant() { return isActiveAdmin() || isConversationClient(clientUid); }
+      function validConversationSend() {
+        let data = request.resource.data;
+        let profile = get(/databases/$(database)/documents/users/$(clientUid)).data;
+        let sent = getAfter(/databases/$(database)/documents/clientConversations/$(clientUid)/messages/$(data.lastMessageId)).data;
+        let admin = isActiveAdmin();
+        return participant() && profile.role == "customer"
+          && data.keys().hasAll(["clientId","clientName","clientEmail","createdAt","updatedAt","lastMessageAt","lastMessagePreview","lastSenderRole","lastMessageId","lastCustomerMessageAt","lastAdminMessageAt","adminReadAt","clientReadAt"])
+          && data.keys().hasOnly(["clientId","clientName","clientEmail","createdAt","updatedAt","lastMessageAt","lastMessagePreview","lastSenderRole","lastMessageId","lastCustomerMessageAt","lastAdminMessageAt","adminReadAt","clientReadAt"])
+          && data.clientId == clientUid && data.clientName == profile.name && data.clientEmail == profile.email
+          && data.updatedAt == request.time && data.lastMessageAt == request.time
+          && validText(data.lastMessageId, 1, 128)
+          && !exists(/databases/$(database)/documents/clientConversations/$(clientUid)/messages/$(data.lastMessageId))
+          && sent.createdAt == request.time && sent.senderId == request.auth.uid
+          && data.lastMessagePreview == sent.message && data.lastSenderRole == sent.senderRole
+          && ((admin && data.lastSenderRole == "admin" && data.lastAdminMessageAt == request.time)
+            || (!admin && data.lastSenderRole == "customer" && data.lastCustomerMessageAt == request.time));
+      }
+      function preservesConversation() {
+        let data = request.resource.data;
+        return data.createdAt == resource.data.createdAt
+          && data.adminReadAt == resource.data.adminReadAt && data.clientReadAt == resource.data.clientReadAt
+          && ((isActiveAdmin() && data.lastCustomerMessageAt == resource.data.lastCustomerMessageAt)
+            || (!isActiveAdmin() && data.lastAdminMessageAt == resource.data.lastAdminMessageAt));
+      }
+      function validReadReceipt() {
+        let data = request.resource.data;
+        return (isActiveAdmin()
+            && data.diff(resource.data).affectedKeys().hasOnly(["adminReadAt"])
+            && data.adminReadAt is timestamp && data.adminReadAt >= resource.data.adminReadAt
+            && data.adminReadAt <= resource.data.lastCustomerMessageAt)
+          || (isConversationClient(clientUid)
+            && data.diff(resource.data).affectedKeys().hasOnly(["clientReadAt"])
+            && data.clientReadAt is timestamp && data.clientReadAt >= resource.data.clientReadAt
+            && data.clientReadAt <= resource.data.lastAdminMessageAt);
+      }
+      allow get: if participant();
+      allow list: if isActiveAdmin();
+      allow create: if validConversationSend()
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.adminReadAt == timestamp.value(0)
+        && request.resource.data.clientReadAt == timestamp.value(0)
+        && ((isActiveAdmin() && request.resource.data.lastCustomerMessageAt == timestamp.value(0))
+          || (!isActiveAdmin() && request.resource.data.lastAdminMessageAt == timestamp.value(0)));
+      allow update: if (validConversationSend() && preservesConversation()) || validReadReceipt();
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        function validClientMessage() {
+          let data = request.resource.data;
+          let parent = getAfter(/databases/$(database)/documents/clientConversations/$(clientUid)).data;
+          return participant()
+            && data.keys().hasAll(["senderId","senderRole","senderName","message","createdAt","readByAdmin","readByClient"])
+            && data.keys().hasOnly(["senderId","senderRole","senderName","message","createdAt","readByAdmin","readByClient"])
+            && data.senderId == request.auth.uid && validText(data.message, 1, 5000)
+            && data.createdAt == request.time && parent.lastMessageId == messageId && parent.updatedAt == request.time
+            && ((isActiveAdmin() && data.senderRole == "admin" && data.senderName == "SilverForge"
+                && data.readByAdmin == true && data.readByClient == false)
+              || (isConversationClient(clientUid) && data.senderRole == "customer"
+                && data.senderName == get(/databases/$(database)/documents/users/$(clientUid)).data.name
+                && data.readByAdmin == false && data.readByClient == true));
+        }
+        allow read: if participant();
+        allow create: if validClientMessage();
+        // Only the recipient can mark a received message read, never unread.
+        allow update: if (isActiveAdmin() && resource.data.senderRole == "customer"
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["readByAdmin"])
+            && request.resource.data.readByAdmin == true)
+          || (isConversationClient(clientUid) && resource.data.senderRole == "admin"
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["readByClient"])
+            && request.resource.data.readByClient == true);
+        allow delete: if false;
+      }
     }
 
     function validContactCreate() {

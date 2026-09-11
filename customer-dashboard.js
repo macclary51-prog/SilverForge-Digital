@@ -1,9 +1,30 @@
+import { bindClientComposer, watchClientMessages } from "./client-messages.js";
 import { db } from "./firebase-config.js";
 import { addDoc, collection, onSnapshot, query, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { $, conversation, currency, date, element, message, metadata, millis, options, ticketStatuses, ticketTypes } from "./portal-shared.js";
 
 export function startCustomerDashboard(user, profile) {
   const subscriptions = [];
+  let messageOpen = false;
+  $("dashboardConversation").hidden = true;
+  $("toggleClientMessages").textContent = "Open Conversation";
+  $("toggleClientMessages").setAttribute("aria-expanded", "false");
+  const directMessages = watchClientMessages(user.uid, "customer", {
+    list: $("dashboardMessageList"), status: $("dashboardMessageStatus"), isOpen: () => messageOpen,
+    onChange: items => {
+      const unread = items.filter(item => item.senderRole === "admin" && !item.readByClient).length;
+      $("clientUnreadCount").textContent = String(unread);
+      $("dashboardUnread").textContent = unread ? unread + " unread message(s) from SilverForge." : "No unread messages.";
+    }
+  });
+  const directComposer = bindClientComposer(user.uid, user, "customer", { form: $("dashboardMessageForm"), input: $("dashboardMessageText"), status: $("dashboardSendStatus"), getProfile: () => profile });
+  const toggleMessages = () => {
+    messageOpen = !messageOpen; $("dashboardConversation").hidden = !messageOpen;
+    $("toggleClientMessages").setAttribute("aria-expanded", String(messageOpen));
+    $("toggleClientMessages").textContent = messageOpen ? "Close Conversation" : "Open Conversation";
+    if (messageOpen) { directMessages.refreshRead(); $("dashboardMessageText").focus(); }
+  };
+  $("toggleClientMessages").addEventListener("click", toggleMessages);
   let tickets = [];
   let selectedId = "";
   let stopConversation = () => {};
@@ -96,7 +117,8 @@ export function startCustomerDashboard(user, profile) {
   form.addEventListener("submit", submit);
   $("closeTicket").addEventListener("click", closeTicket);
   return () => {
-    disposed = true; subscriptions.forEach(stop => stop()); closeTicket();
+    disposed = true; directMessages.stop(); directComposer.stop(); $("toggleClientMessages").removeEventListener("click", toggleMessages);
+    subscriptions.forEach(stop => stop()); closeTicket();
     form.removeEventListener("submit", submit); $("closeTicket").removeEventListener("click", closeTicket);
     $("myQuotes").replaceChildren(); $("myTickets").replaceChildren(); button.disabled = false;
   };
