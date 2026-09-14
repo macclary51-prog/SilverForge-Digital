@@ -1,0 +1,19 @@
+{
+  "name": "silverforge-admin-alerts",
+  "private": true,
+  "main": "src/index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "verify:project": "node scripts/verify-project.js",
+    "build": "node --check src/index.js && node --check src/notifications.js && node --check src/store.js && node --check src/sms.js && node --check src/status.js",
+    "test": "node --test test/*.test.js"
+  },
+  "overrides": { "gaxios": { "uuid": "^11.1.1" } },
+  "dependencies": {
+    "firebase-admin": "^14.4.0",
+    "firebase-functions": "^7.3.2",
+    "twilio": "^6.1.1"
+  }
+}

@@ -1,6 +1,6 @@
 import { auth, db } from "./firebase-config.js";
 import { addDoc, collection, deleteDoc, doc, limit, onSnapshot, orderBy, query, runTransaction, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import { $, currency, date, element, message, metadata, millis, ticketPriorities, ticketStatuses, ticketTypes } from "./portal-shared.js";
+import { $, currency, date, element, message, metadata, millis, ticketPriorities, ticketStatuses, ticketTypes } from "./portal-shared.js?v=2";
 import { bindClientComposer, validClientEmail, watchClientMessages } from "./client-messages.js";
 import { quoteSummary } from "./quote-summary.js";
 
@@ -22,7 +22,7 @@ export async function linkProjectToClient(leadId, clientId) {
 
 const tabs = { overview: "Overview", projects: "Projects", messages: "Messages", support: "Support", notes: "Private Notes", activity: "Activity" };
 const byNewest = (a, b) => millis(b.createdAt) - millis(a.createdAt);
-const isOpenTicket = ticket => ["open", "in-review", "working"].includes(ticket.status);
+const isOpenTicket = ticket => ["open", "in-review", "working", "waiting-on-client"].includes(ticket.status);
 const labelStatus = status => String(status || "new").replaceAll("-", " ");
 
 export function createClientWorkspace({ getAccounts, getLeads, openLead, onMetrics }) {
@@ -196,7 +196,7 @@ export function createClientWorkspace({ getAccounts, getLeads, openLead, onMetri
     if (action === "notes") { resetNote(); $("clientNoteText").focus(); }
     else if (action !== "projects") { $("clientMessageText").focus(); if (action !== "message") message($("clientSendStatus"), `Write your message, then choose ${action === "email" ? "Send Email" : "Send Website + Email"}.`); }
   }));
-  function refresh() { render(); if (requestedClient && getAccounts().length) { const uid = requestedClient; requestedClient = null; open(uid); } }
+  function refresh() { render(); if (requestedClient && getAccounts().length) { const uid = requestedClient; requestedClient = null; open(uid); const requestedTab = new URLSearchParams(location.search).get("tab"); if (clientId && Object.hasOwn(tabs, requestedTab)) setTab(requestedTab); } }
   function start() {
     if (subscriptions.length) return;
     const fail = error => { console.error("Client workspace summary failed:", error); message($("accountWorkspaceStatus"), "Project, support or unread counts could not be loaded. Refresh to retry.", "error"); };

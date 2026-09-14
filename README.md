@@ -181,7 +181,7 @@ Activity is an admin-only view assembled from existing timestamps. It shows acco
 
 ### Validation and deployment
 
-`npm test` includes 28 Firestore security tests and browser flows for the existing portal plus workspace selection, scoped projects/support, direct messaging, unread/read state, email-only and combined drafts, rejected-save handling, private note CRUD, confirmed legacy linking/unlinking and desktop/mobile layouts. Email-launch tests intercept `mailto:` links and inspect their contents without sending email or opening a real mail application. All test data stays in `demo-silverforge` emulators.
+`npm test` includes 32 Firestore security tests and browser flows for the existing portal plus workspace selection, scoped projects/support, direct messaging, unread/read state, email-only and combined drafts, rejected-save handling, private note CRUD, confirmed legacy linking/unlinking and desktop/mobile layouts. Email-launch tests intercept `mailto:` links and inspect their contents without sending email or opening a real mail application. All test data stays in `demo-silverforge` emulators.
 
 Verify the Firebase project is **silverforge-digital** (project number **684696359962**) before deploying rules. This checkout has no `.firebaserc`; explicitly pin the existing project:
 
@@ -189,6 +189,10 @@ Verify the Firebase project is **silverforge-digital** (project number **6846963
 firebase deploy --only firestore:rules --project silverforge-digital --non-interactive
 ```
 
-Deploy no other Firebase services for this feature. If CLI authentication is missing, publish the repository's complete `firestore.rules` in Firebase Console → Firestore Database → Rules instead. Website files use the existing GitHub Pages release process.
+For the workspace feature alone, deploy no other Firebase services. The SMS extension has separate setup instructions below. If CLI authentication is missing, publish the repository's complete `firestore.rules` in Firebase Console → Firestore Database → Rules instead. Website files use the existing GitHub Pages release process.
 
 The atomic-write design follows Firebase's [transaction guidance](https://firebase.google.com/docs/firestore/manage-data/transactions) and [rule validation using getAfter](https://firebase.google.com/docs/firestore/security/rules-conditions).
+
+## Admin notifications and SMS
+
+The admin notification center extends the existing CRM with history, unread badges and category/channel preferences. Secure Cloud Functions use Twilio for optional SMS; live delivery requires Blaze and four Firebase secrets. See [the complete setup guide](docs/ADMIN_NOTIFICATIONS.md) for schema, rules, testing, exact commands, verified deployment prerequisites and the first live test checklist.

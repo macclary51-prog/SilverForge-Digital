@@ -456,14 +456,21 @@ service cloud.firestore {
       return isSignedIn() && ticket.ownerId == request.auth.uid;
     }
 
+    function validRequestProject(data) {
+      return !data.keys().hasAny(["projectId"]) || data.projectId == null
+        || (validText(data.projectId, 1, 128)
+          && get(/databases/$(database)/documents/customerQuotes/$(data.projectId)).data.customerId == request.auth.uid);
+    }
+
     function validTicketCreate() {
       let data = request.resource.data;
       return isSignedIn() && !isActiveAdmin()
         && data.keys().hasAll(["ownerId","ownerEmail","ownerName","type","projectName","title","details","status","priority","createdAt","updatedAt","lastMessageAt"])
-        && data.keys().hasOnly(["ownerId","ownerEmail","ownerName","type","projectName","title","details","status","priority","createdAt","updatedAt","lastMessageAt"])
+        && data.keys().hasOnly(["ownerId","ownerEmail","ownerName","type","projectName","projectId","title","details","status","priority","createdAt","updatedAt","lastMessageAt"])
         && data.ownerId == request.auth.uid && data.ownerEmail == request.auth.token.email
         && validEmail(data.ownerEmail) && validText(data.ownerName, 1, 254)
-        && data.type in ["bug-fix","redesign-change","feature-request","content-update","maintenance","technical-issue","billing","other"]
+        && data.type in ["bug-fix","redesign-change","feature-request","project-request","content-update","maintenance","technical-issue","billing","other"]
+        && validRequestProject(data)
         && validText(data.projectName, 1, 160) && validText(data.title, 1, 200) && validText(data.details, 1, 5000)
         && data.status == "open" && data.priority == "normal"
         && data.createdAt == request.time && data.updatedAt == request.time && data.lastMessageAt == request.time;
@@ -480,7 +487,7 @@ service cloud.firestore {
       allow update: if (ownsTicket(resource.data) && !isActiveAdmin() && validTicketActivity())
         || (isActiveAdmin()
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status","priority","updatedAt","lastMessageAt"])
-          && request.resource.data.status in ["open","in-review","working","resolved","closed"]
+          && request.resource.data.status in ["open","in-review","working","waiting-on-client","resolved","closed"]
           && request.resource.data.priority in ["low","normal","high","urgent"]
           && request.resource.data.updatedAt == request.time
           && (request.resource.data.lastMessageAt == resource.data.lastMessageAt || request.resource.data.lastMessageAt == request.time));
@@ -508,6 +515,39 @@ service cloud.firestore {
         allow create: if validMessage();
         allow update, delete: if false;
       }
+    }
+
+    match /adminSettings/notifications {
+      function validSettings() {
+        let data = request.resource.data;
+        let categories = ["quotes","contacts","accounts","clientMessages","bugFix","redesign","feature","projectRequests","otherRequests","replies"];
+        return data.keys().hasAll(["schemaVersion","channels","categories","updatedAt","updatedBy"])
+          && data.keys().hasOnly(["schemaVersion","channels","categories","updatedAt","updatedBy"])
+          && data.schemaVersion == 1 && data.updatedAt == request.time && data.updatedBy == request.auth.uid
+          && data.channels is map && data.channels.keys().hasAll(["sms","dashboard","email"])
+          && data.channels.keys().hasOnly(["sms","dashboard","email"])
+          && data.channels.sms is bool && data.channels.dashboard is bool && data.channels.email == false
+          && data.categories is map && data.categories.keys().hasAll(categories)
+          && data.categories.keys().hasOnly(categories) && data.categories.values().hasOnly([true, false]);
+      }
+      allow read: if isActiveAdmin();
+      allow create, update: if isActiveAdmin() && validSettings();
+      allow delete: if false;
+    }
+
+    match /adminNotifications/{notificationId} {
+      allow read: if isActiveAdmin();
+      // Only trusted Cloud Functions create history or update SMS delivery state.
+      allow create, delete: if false;
+      allow update: if isActiveAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["read","readAt","readBy"])
+        && request.resource.data.read == true && request.resource.data.readAt == request.time
+        && request.resource.data.readBy == request.auth.uid;
+    }
+
+    match /_notificationDeliveries/{notificationId} {
+      // Durable SMS deduplication/provider metadata is server-only, including for admins.
+      allow read, write: if false;
     }
 
     match /{document=**} {

@@ -2,3 +2,13 @@ node_modules/
 *-debug.log
 test-results/
 .firebase/
+.env
+.env.*
+.secret.local
+**/.env
+**/.env.*
+**/.secret.local
+**/*service-account*.json
+**/*serviceAccount*.json
+**/*firebase-adminsdk*.json
+*.pem

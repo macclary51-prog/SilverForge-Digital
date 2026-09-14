@@ -1,7 +1,7 @@
 import { auth, db, isFirebaseConfigured } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { collection, doc, onSnapshot, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import { $, conversation, date, element, message, metadata, millis, options, ticketPriorities, ticketStatuses, ticketTypes } from "./portal-shared.js";
+import { $, conversation, date, element, message, metadata, millis, options, ticketPriorities, ticketStatuses, ticketTypes } from "./portal-shared.js?v=2";
 
 let user = null;
 let requestedTicket = new URLSearchParams(location.search).get("ticket");
@@ -11,6 +11,7 @@ let tickets = [];
 let contacts = [];
 let selectedId = "";
 let contactId = "";
+let requestedContact = new URLSearchParams(location.search).get("contact");
 let subscriptions = [];
 let stopRole = () => {};
 let stopConversation = () => {};
@@ -80,7 +81,7 @@ function subscribe() {
   message($("supportListStatus"), "Loading requests..."); message($("contactListStatus"), "Loading messages...");
   subscriptions.push(onSnapshot(collection(db, "supportTickets"), snapshot => {
     tickets = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })).sort((a, b) => millis(b.lastMessageAt) - millis(a.lastMessageAt));
-    $("openSupportCount").textContent = tickets.filter(t => ["open", "in-review"].includes(t.status)).length;
+    $("openSupportCount").textContent = tickets.filter(t => ["open", "in-review", "waiting-on-client"].includes(t.status)).length;
     $("workingCount").textContent = tickets.filter(t => t.status === "working").length;
     $("resolvedCount").textContent = tickets.filter(t => t.status === "resolved").length;
     renderTickets();
@@ -90,6 +91,7 @@ function subscribe() {
   subscriptions.push(onSnapshot(collection(db, "contactMessages"), snapshot => {
     contacts = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })).sort((a, b) => millis(b.createdAt) - millis(a.createdAt));
     $("contactCount").textContent = contacts.length; renderContacts();
+    if (requestedContact) { const contact = contacts.find(item => item.id === requestedContact); requestedContact = null; if (contact) { contactId = contact.id; contactDetail(contact); $("contactDetail").hidden = false; $("contactDetail").focus(); } }
     if (contactId) { const contact = contacts.find(c => c.id === contactId); if (contact) contactDetail(contact); else closeContact(); }
   }, error => { if (error.code === "permission-denied") deny(); else message($("contactListStatus"), "General messages could not be loaded. Refresh to retry.", "error"); }));
 }
