@@ -5,6 +5,7 @@
   "scripts": {
     "test": "node tests/static-check.mjs && firebase emulators:exec --project demo-silverforge --only auth,firestore \"node --test tests/rules.test.mjs && node tests/browser.test.mjs\"",
     "check": "node tests/static-check.mjs",
+    "test:notifications": "npm --prefix functions run build && npm --prefix functions test && node tests/run-notifications.mjs",
     "test:rules": "firebase emulators:exec --project demo-silverforge --only firestore \"node --test tests/rules.test.mjs\"",
     "preview": "node tests/preview.mjs"
   },

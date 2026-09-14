@@ -3,11 +3,11 @@ import { collection, doc, onSnapshot, orderBy, query, serverTimestamp, writeBatc
 
 export const ticketTypes = {
   "bug-fix": "Bug Fix", "redesign-change": "Redesign / Change",
-  "feature-request": "Feature Request", "content-update": "Content Update",
+  "feature-request": "Feature Request", "project-request": "General Project Request", "content-update": "Content Update",
   maintenance: "Maintenance / Update", "technical-issue": "Technical Issue",
   billing: "Billing / Service Question", other: "Other"
 };
-export const ticketStatuses = { open: "Open", "in-review": "In Review", working: "Working", resolved: "Resolved", closed: "Closed" };
+export const ticketStatuses = { open: "Open", "in-review": "In Review", working: "Working", "waiting-on-client": "Waiting on Client", resolved: "Resolved", closed: "Closed" };
 export const ticketPriorities = { low: "Low", normal: "Normal", high: "High", urgent: "Urgent" };
 export const contactCategories = ["General Question", "Billing Question", "Partnership / Business", "Existing Project Question", "Other"];
 export const services = ["App Development", "Website Development", "Social Media Management", "Content and Video Creation", "Digital Advertising", "Multiple Services"];

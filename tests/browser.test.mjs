@@ -4,6 +4,7 @@ import { chromium } from 'playwright';
 import { initializeTestEnvironment } from '@firebase/rules-unit-testing';
 import { collection, doc, getDoc, getDocs, setDoc, Timestamp } from 'firebase/firestore';
 import { startPreview } from './preview.mjs';
+import { defaultNotificationSettings } from '../notification-shared.js';
 
 // Test-only server replacement. The production config is never edited or loaded.
 const config = `
@@ -250,6 +251,62 @@ try {
   await admin.locator('#closeClientWorkspace').click();
   successes.push('Desktop table and 390px mobile cards/workspace fit their viewports; missing-email clients have disabled email actions with the required explanation.');
 
+  // Verify the new request field against an actually assigned project.
+  await client.locator('#type').selectOption('project-request'); await client.locator('#requestProjectId').selectOption(aliceLead.id);
+  assert.equal(await client.locator('#projectName').inputValue(), 'Alice Business'); assert.ok(await client.locator('#projectName').evaluate(node => node.readOnly));
+  await client.locator('#title').fill('Add a project landing page'); await client.locator('#details').fill('A general request for my assigned project.');
+  await client.locator('#newTicketForm button[type="submit"]').click(); await hasText(client, '#newTicketStatus', 'Support request created');
+  const newRequest = (await getDocs(collection(adminDb, 'supportTickets'))).docs.find(item => item.data().title === 'Add a project landing page');
+  assert.equal(newRequest.data().projectId, aliceLead.id); assert.equal(newRequest.data().type, 'project-request');
+  assert.equal(await other.locator(`#requestProjectId option[value="${aliceLead.id}"]`).count(), 0);
+  await admin.goto(`${base}/crm-support.html?ticket=${newRequest.id}`); await hasText(admin, '#ticketDetailTitle', 'Add a project landing page');
+  await admin.locator('#ticketStatus').selectOption('waiting-on-client'); await admin.locator('#ticketAdminForm button').click(); await hasText(client, '#ticketDetailMeta', 'Waiting on Client');
+  successes.push('General Project Request saves the assigned project ID; other clients cannot select it; Waiting on Client is visible in both dashboards.');
+
+  const contactId = (await getDocs(collection(adminDb, 'contactMessages'))).docs[0].id;
+  await env.withSecurityRulesDisabled(async ctx => {
+    const db = ctx.firestore();
+    for (let i = 0; i < 55; i++) await setDoc(doc(db, 'adminNotifications', `fixture-${i}`), {
+      type: 'new-contact', category: i === 54 ? 'quotes' : 'contacts', title: i === 53 ? 'New General Contact' : `Notification fixture ${i}`, message: i === 53 ? 'General Visitor · Invoice question' : '<script>private activity</script>',
+      clientId: null, projectId: null, requestId: null, read: i < 53, dashboardEnabled: true,
+      smsStatus: i === 54 ? 'failed' : 'simulated', smsErrorCode: i === 54 ? 21610 : null,
+      link: i === 54 ? `crm.html?lead=${aliceLead.id}` : `crm-support.html?contact=${contactId}`, createdAt: Timestamp.fromMillis(Date.now() + i)
+    });
+    await setDoc(doc(db, 'adminSettings', 'notifications'), { ...defaultNotificationSettings(), updatedAt: Timestamp.now(), updatedBy: seededAdmin.localId });
+  });
+  await hasText(admin, '[data-notification-badge]', '(2)'); await admin.locator('a[href="crm-notifications.html"]').click();
+  await hasText(admin, '#notificationUnread', '2 unread'); await hasText(admin, '#notificationList', 'Notification fixture 54');
+  assert.equal(await admin.locator('#notificationList article').count(), 50); assert.equal(await admin.locator('#notificationList script').count(), 0);
+  assert.ok(await admin.locator('#notifyEmail').isDisabled());
+  await admin.locator('#loadMoreNotifications').click(); await hasText(admin, '#notificationList', 'Notification fixture 0'); assert.equal(await admin.locator('#notificationList article').count(), 55);
+  await admin.locator('#notificationFilter').selectOption('sms-issues'); assert.equal(await admin.locator('#notificationList article').count(), 1); await hasText(admin, '#notificationList', '21610');
+  await admin.locator('#notificationList').getByRole('button', { name: 'Mark Read' }).click(); await hasText(admin, '#notificationUnread', '1 unread');
+  // The badge reflects optimistic local snapshots; wait for server acknowledgement before checking through a separate SDK client.
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if ((await getDoc(doc(adminDb, 'adminNotifications', 'fixture-54'))).data().readBy === seededAdmin.localId) break;
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  assert.equal((await getDoc(doc(adminDb, 'adminNotifications', 'fixture-54'))).data().readBy, seededAdmin.localId);
+  await admin.locator('#notificationList a').click(); await hasText(admin, '#leadDialogTitle', 'Alice');
+  await admin.goto(`${base}/crm.html?client=${aliceLead.data().customerId}&tab=messages`); await hasText(admin, '#clientMessages', 'update the homepage heading');
+  assert.ok(await admin.locator('#clientPanel-messages').isVisible());
+  await admin.goto(`${base}/crm-support.html?contact=${contactId}`); await hasText(admin, '#contactBody', 'explain my service invoice');
+  await admin.goto(`${base}/crm-notifications.html`); await hasText(admin, '#notificationUnread', '1 unread');
+  await admin.locator('#notifySms').uncheck(); await admin.locator('#notifyDashboard').uncheck(); await admin.locator('#notify-bugFix').uncheck();
+  await admin.locator('#saveNotificationSettings').click(); await hasText(admin, '#notificationSettingsStatus', 'settings saved'); await hasText(admin, '#notificationUnread', '0 unread');
+  await admin.reload(); await admin.locator('#notificationApp').waitFor({ state: 'visible' });
+  await admin.waitForFunction(() => !document.querySelector('#notifySms').checked);
+  assert.equal(await admin.locator('#notify-bugFix').isChecked(), false); assert.equal(await admin.locator('#notifyDashboard').isChecked(), false);
+  await admin.locator('#notifySms').check(); await admin.locator('#notifyDashboard').check(); await admin.locator('#notify-bugFix').check();
+  await admin.locator('#saveNotificationSettings').click(); await hasText(admin, '#notificationSettingsStatus', 'settings saved'); await hasText(admin, '#notificationUnread', '1 unread');
+  await admin.locator('#notificationFilter').selectOption('unread'); await hasText(admin, '#notificationList', 'New General Contact');
+  await admin.getByRole('link', { name: 'Notification Settings', exact: true }).click(); await admin.locator('#notificationSettingsTitle').waitFor({ state: 'visible' });
+  await admin.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
+  await admin.setViewportSize({ width: 1440, height: 1000 }); await noOverflow(admin); await admin.screenshot({ path: 'test-results/notifications-desktop.png', fullPage: true });
+  await admin.setViewportSize({ width: 390, height: 844 }); await noOverflow(admin); await admin.screenshot({ path: 'test-results/notifications-mobile.png', fullPage: true });
+  await other.goto(`${base}/crm-notifications.html`); await other.waitForURL('**/crm-login.html?reason=unauthorized');
+  successes.push('Notification center pagination, unread badges, read receipts, safe text, filters, saved settings, activity links, client denial and mobile layout pass.');
+
   await other.goto(`${base}/crm-support.html`); await other.waitForURL('**/crm-login.html?reason=unauthorized');
   const signedOut = await pageFor(); await signedOut.goto(`${base}/customer-account.html`); await signedOut.waitForURL('**/customer-login.html');
   successes.push('Customer support inbox access and unauthenticated dashboard access are blocked.');
@@ -259,6 +316,7 @@ try {
   await directAdmin.locator('a[href="crm-support.html"]').click(); await directAdmin.locator('#supportApp').waitFor({ state: 'visible' });
   await env.withSecurityRulesDisabled(ctx => setDoc(doc(ctx.firestore(), 'roles', seededAdmin.localId), { role: 'admin', active: false }));
   await directAdmin.waitForURL('**/crm-login.html?reason=unauthorized');
+  await admin.waitForURL('**/crm-login.html?reason=unauthorized');
   successes.push('Original admin login and status filters work; revoking the admin role removes inbox access.');
   assert.deepEqual(failures, [], 'Unexpected browser errors or production requests');
   successes.push('No JavaScript console errors, uncaught errors or production data requests in tested flows.');

@@ -4,7 +4,7 @@ import {
     isFirebaseConfigured
 } from "./firebase-config.js";
 import { quoteSummary } from "./quote-summary.js";
-import { createClientWorkspace, linkProjectToClient } from "./client-workspace.js";
+import { createClientWorkspace, linkProjectToClient } from "./client-workspace.js?v=2";
 
 import {
     onAuthStateChanged,
@@ -111,6 +111,7 @@ const communicationHistory = document.getElementById("communicationHistory");
 let leads = [];
 let accounts = [];
 let selectedLeadId = "";
+let requestedLead = new URLSearchParams(location.search).get("lead");
 let unsubscribeLeads = null;
 let unsubscribeAccounts = null;
 let unsubscribeCommunications = null;
@@ -741,6 +742,7 @@ function subscribeToLeads() {
 
             updateSummary();
             renderLeadList();
+            if (requestedLead) { const id = requestedLead; requestedLead = null; openLead(id); }
             renderAccounts();
             workspace.refresh();
             if (selectedLeadId) updateClientLinkLabel();

@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
 import { collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, setDoc, Timestamp, updateDoc, where, writeBatch } from 'firebase/firestore';
 import { quoteSummary } from '../quote-summary.js';
+import { defaultNotificationSettings } from '../notification-shared.js';
 
 let env, alice, bob, admin, inactive, anonymous;
 const now = () => serverTimestamp();
@@ -38,6 +39,44 @@ before(async () => {
   });
 });
 after(async () => { await env?.cleanup(); });
+
+test('notification history is admin-only, server-created and browser updates are read receipts only', async () => {
+  await env.withSecurityRulesDisabled(ctx => setDoc(doc(ctx.firestore(), 'adminNotifications', 'one'), { type: 'new-contact', title: 'Contact', read: false, smsStatus: 'accepted', createdAt: Timestamp.now() }));
+  for (const db of [alice, bob, anonymous, inactive]) {
+    await assertFails(getDoc(doc(db, 'adminNotifications', 'one')));
+    await assertFails(getDocs(collection(db, 'adminNotifications')));
+    await assertFails(updateDoc(doc(db, 'adminNotifications', 'one'), { read: true, readAt: now(), readBy: 'alice' }));
+  }
+  await assertSucceeds(getDoc(doc(admin, 'adminNotifications', 'one')));
+  await assertSucceeds(updateDoc(doc(admin, 'adminNotifications', 'one'), { read: true, readAt: now(), readBy: 'admin' }));
+  for (const change of [{ smsStatus: 'delivered' }, { read: false }, { readBy: 'alice' }, { phone: 'forbidden' }]) await assertFails(updateDoc(doc(admin, 'adminNotifications', 'one'), { readAt: now(), ...change }));
+  await assertFails(setDoc(doc(admin, 'adminNotifications', 'injected'), { read: false }));
+  await assertFails(deleteDoc(doc(admin, 'adminNotifications', 'one')));
+});
+
+test('only active admins can save strict notification settings without secrets or email activation', async () => {
+  const valid = () => ({ ...defaultNotificationSettings(), updatedAt: now(), updatedBy: 'admin' });
+  for (const db of [alice, bob, anonymous, inactive]) {
+    await assertFails(getDoc(doc(db, 'adminSettings', 'notifications')));
+    await assertFails(setDoc(doc(db, 'adminSettings', 'notifications'), valid()));
+  }
+  await assertSucceeds(setDoc(doc(admin, 'adminSettings', 'notifications'), valid()));
+  for (const change of [{ adminPhone: 'forbidden' }, { updatedBy: 'alice' }, { schemaVersion: 2 },
+    { channels: { sms: true, dashboard: true, email: true } }, { channels: { sms: 'true', dashboard: true, email: false } },
+    { categories: { ...defaultNotificationSettings().categories, contacts: 'true' } }, { categories: { quotes: true } }]) {
+    await assertFails(setDoc(doc(admin, 'adminSettings', 'notifications'), { ...valid(), ...change }));
+  }
+  await assertFails(deleteDoc(doc(admin, 'adminSettings', 'notifications')));
+});
+
+test('delivery reservations are inaccessible to every browser role including admin', async () => {
+  await env.withSecurityRulesDisabled(ctx => setDoc(doc(ctx.firestore(), '_notificationDeliveries', 'one'), { status: 'accepted', providerId: 'private' }));
+  for (const db of [alice, bob, anonymous, inactive, admin]) {
+    await assertFails(getDoc(doc(db, '_notificationDeliveries', 'one')));
+    await assertFails(setDoc(doc(db, '_notificationDeliveries', 'one'), { status: 'attempting' }));
+    await assertFails(deleteDoc(doc(db, '_notificationDeliveries', 'one')));
+  }
+});
 
 test('anonymous quotes remain valid; public cannot read leads or summaries', async () => {
   await assertSucceeds(createQuote(anonymous, 'public', lead()));
@@ -292,4 +331,16 @@ test('relink and unlink revoke old customer access atomically and preserve leads
   assert.equal((await getDoc(doc(admin, 'customerQuotes', 'legacy'))).exists(), false);
   assert.ok((await getDoc(doc(admin, 'leads', 'legacy'))).exists());
   await assertFails(getDoc(doc(bob, 'leads', 'legacy')));
+});
+
+test('general project requests allow owned project IDs and legacy tickets, reject other clients and status edits', async () => {
+  await assertSucceeds(createQuote(alice, 'project-for-request', lead('alice', 'alice@example.com')));
+  await assertSucceeds(setDoc(doc(alice, 'supportTickets', 'project-request'), { ...ticket(), type: 'project-request', projectId: 'project-for-request' }));
+  await assertSucceeds(setDoc(doc(alice, 'supportTickets', 'unlisted-project'), { ...ticket(), type: 'project-request', projectId: null }));
+  await assertSucceeds(setDoc(doc(alice, 'supportTickets', 'legacy-project'), ticket()));
+  await assertFails(setDoc(doc(bob, 'supportTickets', 'stolen-project'), { ...ticket('bob'), projectId: 'project-for-request' }));
+  await assertFails(setDoc(doc(alice, 'supportTickets', 'missing-project'), { ...ticket(), projectId: 'missing' }));
+  await assertFails(updateDoc(doc(alice, 'supportTickets', 'project-request'), { status: 'waiting-on-client', updatedAt: now() }));
+  await assertSucceeds(updateDoc(doc(admin, 'supportTickets', 'project-request'), { status: 'waiting-on-client', updatedAt: now() }));
+  assert.equal((await getDoc(doc(alice, 'supportTickets', 'project-request'))).data().status, 'waiting-on-client');
 });

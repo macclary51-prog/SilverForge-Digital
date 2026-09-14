@@ -139,7 +139,8 @@
 
 
       <section class="section section-dark"><div class="container portal-stack">
-<div class="portal-summary" aria-label="Dashboard summary">
+<nav class="portal-actions" aria-label="Client dashboard sections"><a class="secondary-button" href="#dashboardOverview">Overview</a><a class="secondary-button" href="#myProjectsSection">My Projects</a><a class="secondary-button" href="#dashboardMessages">Messages</a><a class="secondary-button" href="#supportRequestsSection">Support / Requests</a><a class="secondary-button" href="#accountSection">Account</a></nav>
+<div class="portal-summary" id="dashboardOverview" aria-label="Dashboard summary">
         <article>
         <span>My Quotes / Projects</span>
         <strong id="myQuotesCount">—</strong>
@@ -170,7 +171,7 @@
         <a class="secondary-button" href="contact.html">General Contact</a>
         </div>
         </div>
-<section class="portal-card">
+<section class="portal-card" id="myProjectsSection">
         <h2>My Quotes / Projects</h2>
         <p>Quotes submitted while signed in to this account appear here.</p>
         <p class="form-message" id="myQuotesStatus" role="status" aria-live="polite">
@@ -188,7 +189,7 @@
           <form class="contact-form" id="dashboardMessageForm"><div class="form-field"><label for="dashboardMessageText">Message SilverForge</label><textarea id="dashboardMessageText" rows="5" maxlength="5000" required></textarea></div><button type="submit" class="submit-button">Send Website Message</button><p class="form-message" id="dashboardSendStatus" role="status" aria-live="polite"></p></form>
         </div>
         </section>
-<div class="portal-grid"><section class="portal-card"><h2>Support / Change Requests</h2><p class="form-message" id="myTicketsStatus" role="status" aria-live="polite"></p><div class="portal-list" id="myTickets"></div></section>
+<div class="portal-grid" id="supportRequestsSection"><section class="portal-card"><h2>Support / Change Requests</h2><p class="form-message" id="myTicketsStatus" role="status" aria-live="polite"></p><div class="portal-list" id="myTickets"></div></section>
 <section class="portal-card">
         <h2>Report Bug / Request Change</h2>
         <p>For existing projects and services. Include what happened and what you need changed.</p>
@@ -199,6 +200,8 @@
         </select>
         </div>
         <div class="form-field">
+        <label for="requestProjectId">Linked project (optional)</label><select id="requestProjectId" name="projectId"><option value="">Unlisted project / general request</option></select>
+        </div><div class="form-field">
         <label for="projectName">Project / service name</label>
         <input id="projectName" name="projectName" type="text" maxlength="160"  required>
         </div>
@@ -248,7 +251,7 @@
         <div class="container customer-dashboard-grid">
 
 
-          <section class="customer-account-card">
+          <section class="customer-account-card" id="accountSection">
 
             <div class="customer-card-heading">
 
@@ -550,7 +553,7 @@
 
   <script
     type="module"
-    src="customer-auth.js?v=3"
+    src="customer-auth.js?v=4"
   ></script>
 
 </body>

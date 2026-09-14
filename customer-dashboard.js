@@ -1,7 +1,7 @@
 import { bindClientComposer, watchClientMessages } from "./client-messages.js";
 import { db } from "./firebase-config.js";
 import { addDoc, collection, onSnapshot, query, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-import { $, conversation, currency, date, element, message, metadata, millis, options, ticketStatuses, ticketTypes } from "./portal-shared.js";
+import { $, conversation, currency, date, element, message, metadata, millis, options, ticketStatuses, ticketTypes } from "./portal-shared.js?v=2";
 
 export function startCustomerDashboard(user, profile) {
   const subscriptions = [];
@@ -26,6 +26,8 @@ export function startCustomerDashboard(user, profile) {
   };
   $("toggleClientMessages").addEventListener("click", toggleMessages);
   let tickets = [];
+  let projects = [];
+  const projectSelect = $("requestProjectId");
   let selectedId = "";
   let stopConversation = () => {};
   let disposed = false;
@@ -59,6 +61,12 @@ export function startCustomerDashboard(user, profile) {
   }
   subscriptions.push(onSnapshot(query(collection(db, "customerQuotes"), where("customerId", "==", user.uid)), snapshot => {
     $("myQuotes").replaceChildren();
+    projects = snapshot.docs.map(record => ({ ...record.data(), id: record.id }));
+    const selectedProject = projectSelect.value;
+    projectSelect.replaceChildren(new Option("Unlisted project / general request", ""));
+    projects.forEach(project => projectSelect.append(new Option((project.business || project.service) + " · " + project.service, project.id)));
+    projectSelect.value = projects.some(project => project.id === selectedProject) ? selectedProject : "";
+    $("projectName").readOnly = Boolean(projectSelect.value);
     $("myQuotesCount").textContent = snapshot.size;
     message($("myQuotesStatus"), snapshot.empty ? "No quotes yet. Request a new project quote while signed in to track it here." : "");
     for (const quote of snapshot.docs.map(doc => doc.data()).sort((a, b) => millis(b.createdAt) - millis(a.createdAt))) {
@@ -67,13 +75,14 @@ export function startCustomerDashboard(user, profile) {
       $("myQuotes").append(card);
     }
   }, () => {
+    projects = []; projectSelect.replaceChildren(new Option("Unlisted project / general request", "")); $("projectName").readOnly = false;
     $("myQuotes").replaceChildren(); $("myQuotesCount").textContent = "—";
     message($("myQuotesStatus"), "Quotes could not be loaded. Check your connection and refresh.", "error");
   }));
   subscriptions.push(onSnapshot(query(collection(db, "supportTickets"), where("ownerId", "==", user.uid)), snapshot => {
     tickets = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })).sort((a, b) => millis(b.lastMessageAt) - millis(a.lastMessageAt));
     $("myTickets").replaceChildren();
-    $("openTicketsCount").textContent = tickets.filter(t => ["open", "in-review", "working"].includes(t.status)).length;
+    $("openTicketsCount").textContent = tickets.filter(t => ["open", "in-review", "working", "waiting-on-client"].includes(t.status)).length;
     $("resolvedTicketsCount").textContent = tickets.filter(t => t.status === "resolved").length;
     message($("myTicketsStatus"), tickets.length ? "" : "No support requests yet. Use the form to report a bug or request a change.");
     for (const ticket of tickets) {
@@ -102,23 +111,25 @@ export function startCustomerDashboard(user, profile) {
     message($("newTicketStatus"), "Creating request...");
     try {
       const record = await addDoc(collection(db, "supportTickets"), {
-        ...data, ownerId: user.uid, ownerEmail: user.email,
+        ...data, projectId: projectSelect.value || null, ownerId: user.uid, ownerEmail: user.email,
         ownerName: (user.displayName || profile.name || user.email).slice(0, 254),
         status: "open", priority: "normal", createdAt: serverTimestamp(), updatedAt: serverTimestamp(), lastMessageAt: serverTimestamp()
       });
       if (!disposed) {
-        form.reset(); message($("newTicketStatus"), "Support request created. Open it to send messages and follow progress.", "success");
+        form.reset(); $("projectName").readOnly = false; message($("newTicketStatus"), "Support request created. Open it to send messages and follow progress.", "success");
         openTicket(record.id);
       }
     } catch {
       if (!disposed) message($("newTicketStatus"), "Request could not be created. Your details are still here; please try again.", "error");
     } finally { if (!disposed) button.disabled = false; }
   };
+  const chooseProject = () => { const project = projects.find(item => item.id === projectSelect.value); $("projectName").readOnly = Boolean(project); if (project) $("projectName").value = project.business || project.service; };
+  projectSelect.addEventListener("change", chooseProject);
   form.addEventListener("submit", submit);
   $("closeTicket").addEventListener("click", closeTicket);
   return () => {
     disposed = true; directMessages.stop(); directComposer.stop(); $("toggleClientMessages").removeEventListener("click", toggleMessages);
-    subscriptions.forEach(stop => stop()); closeTicket();
+    subscriptions.forEach(stop => stop()); closeTicket(); projectSelect.removeEventListener("change", chooseProject);
     form.removeEventListener("submit", submit); $("closeTicket").removeEventListener("click", closeTicket);
     $("myQuotes").replaceChildren(); $("myTickets").replaceChildren(); button.disabled = false;
   };
