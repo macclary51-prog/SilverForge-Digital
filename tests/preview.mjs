@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
-const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml' };
+const types = { '.webmanifest': 'application/manifest+json', '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml' };
 export async function startPreview(port = 4173, overrides = new Map()) {
   const server = http.createServer(async (request, response) => {
     try {
@@ -13,7 +13,7 @@ export async function startPreview(port = 4173, overrides = new Map()) {
         response.end(overrides.get(pathname)); return;
       }
       const filename = path.resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname));
-      if (!filename.startsWith(root + path.sep) || !['.html', '.js', '.css', '.png', '.svg', '.ico'].includes(path.extname(filename)) || pathname.includes('node_modules') || pathname.includes('/.')) {
+      if (!filename.startsWith(root + path.sep) || !['.html', '.js', '.css', '.png', '.svg', '.ico', '.webmanifest'].includes(path.extname(filename)) || pathname.includes('node_modules') || pathname.includes('/.')) {
         response.writeHead(404); response.end(); return;
       }
       const data = await fs.readFile(filename);

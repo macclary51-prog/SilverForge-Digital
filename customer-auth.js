@@ -1,3 +1,4 @@
+import { signOutWithPushCleanup } from "./push-session.js";
 import { auth, db, isFirebaseConfigured } from "./firebase-config.js";
 import { startCustomerDashboard } from "./customer-dashboard.js?v=3";
 
@@ -8,7 +9,6 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
-  signOut,
   updateProfile
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
@@ -269,7 +269,7 @@ async function initializeLogin() {
       console.error("Customer login failed:", error);
 
       if (auth.currentUser) {
-        await signOut(auth);
+        await signOutWithPushCleanup();
       }
 
       setButtonBusy(button, false, "Signing In...", "Sign In");
@@ -494,7 +494,7 @@ function bindAccountActions(user) {
     signOutButton.textContent = "Signing Out...";
 
     try {
-      await signOut(auth);
+      await signOutWithPushCleanup();
       // The auth observer clears private data and redirects once.
     } catch (error) {
       setMessage(actionStatus, "Sign out could not be completed. Please try again.", "error");

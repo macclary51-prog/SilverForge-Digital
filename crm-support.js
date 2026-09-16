@@ -1,5 +1,7 @@
+import { adminLoginPath } from "./push-routing.js";
+import { signOutWithPushCleanup } from "./push-session.js";
 import { auth, db, isFirebaseConfigured } from "./firebase-config.js";
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { collection, doc, onSnapshot, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { $, conversation, date, element, message, metadata, millis, options, ticketPriorities, ticketStatuses, ticketTypes } from "./portal-shared.js?v=2";
 
@@ -118,14 +120,14 @@ $("closeContactMessage").addEventListener("click", async () => {
   } catch { if (contactId === id) { $("closeContactMessage").disabled = false; message($("contactActionStatus"), "Message could not be closed. Please try again.", "error"); } }
 });
 $("signOutButton").addEventListener("click", async () => {
-  try { await signOut(auth); } catch { message($("accessMessage"), "Sign out failed. Please try again.", "error"); }
+  try { await signOutWithPushCleanup(); } catch { message($("accessMessage"), "Sign out failed. Please try again.", "error"); }
 });
 if (!isFirebaseConfigured || !auth || !db) {
   $("accessMessage").textContent = "Support inbox is temporarily unavailable.";
 } else {
   onAuthStateChanged(auth, current => {
     stopRole(); clearAccess(); user = current;
-    if (!user) { window.location.replace("crm-login.html"); return; }
+    if (!user) { window.location.replace(adminLoginPath()); return; }
     const uid = user.uid;
     // Observe the same roles/{uid} admin + active fields used by the Lead CRM.
     stopRole = onSnapshot(doc(db, "roles", uid), snapshot => {

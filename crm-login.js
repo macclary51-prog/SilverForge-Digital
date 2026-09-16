@@ -1,3 +1,5 @@
+import { safeAdminReturn } from "./push-routing.js";
+import { signOutWithPushCleanup } from "./push-session.js";
 import {
     auth,
     db,
@@ -6,8 +8,7 @@ import {
 
 import {
     onAuthStateChanged,
-    signInWithEmailAndPassword,
-    signOut
+    signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
 import {
@@ -65,7 +66,7 @@ async function authorizeUser(user) {
         await userIsActiveAdmin(user);
 
     if (!authorized) {
-        await signOut(auth);
+        await signOutWithPushCleanup();
 
         setLoginBusy(false);
 
@@ -77,7 +78,7 @@ async function authorizeUser(user) {
         return;
     }
 
-    window.location.replace("crm.html");
+    window.location.replace(safeAdminReturn(new URLSearchParams(location.search).get("return")));
 }
 
 
@@ -145,7 +146,7 @@ async function initializeLogin() {
         );
 
         if (auth.currentUser) {
-            await signOut(auth);
+            await signOutWithPushCleanup();
         }
 
         setLoginBusy(false);
@@ -200,7 +201,7 @@ loginForm.addEventListener(
             );
 
             if (auth.currentUser) {
-                await signOut(auth);
+                await signOutWithPushCleanup();
             }
 
             setLoginBusy(false);

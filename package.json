@@ -3,14 +3,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tests/static-check.mjs && firebase emulators:exec --project demo-silverforge --only auth,firestore \"node --test tests/rules.test.mjs && node tests/browser.test.mjs\"",
+    "test": "node tests/static-check.mjs && firebase emulators:exec --project demo-silverforge --only auth,firestore \"node --test tests/rules.test.mjs && node tests/browser.test.mjs && node tests/push.browser.mjs\"",
     "check": "node tests/static-check.mjs",
     "test:notifications": "npm --prefix functions run build && npm --prefix functions test && node tests/run-notifications.mjs",
     "test:rules": "firebase emulators:exec --project demo-silverforge --only firestore \"node --test tests/rules.test.mjs\"",
-    "preview": "node tests/preview.mjs"
+    "preview": "node tests/preview.mjs",
+    "build:worker": "node scripts/build-worker.mjs"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^5.0.0",
+    "esbuild": "^0.28.2",
     "firebase": "12.16.0",
     "firebase-tools": "^15.0.0",
     "playwright": "^1.58.0"

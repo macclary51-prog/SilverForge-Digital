@@ -3,6 +3,7 @@ import { mkdir, readFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
 import { initializeTestEnvironment } from '@firebase/rules-unit-testing';
 import { collection, doc, getDoc, getDocs, setDoc, Timestamp } from 'firebase/firestore';
+import { buildWorker } from '../scripts/build-worker.mjs';
 import { startPreview } from './preview.mjs';
 import { defaultNotificationSettings } from '../notification-shared.js';
 
@@ -11,10 +12,12 @@ const config = `
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
 import { getAuth, connectAuthEmulator } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
 import { getFirestore, connectFirestoreEmulator } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js';
+import { protectPushSession } from './push-auth-state.js';
 export const app = initializeApp({ projectId: 'demo-silverforge', apiKey: 'demo-key', authDomain: 'demo-silverforge.firebaseapp.com' });
 export const auth = getAuth(app); export const db = getFirestore(app); export const isFirebaseConfigured = true;
 connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
 connectFirestoreEmulator(db, '127.0.0.1', 8080);
+protectPushSession(auth);
 `;
 const base = 'http://127.0.0.1:4174';
 const env = await initializeTestEnvironment({ projectId: 'demo-silverforge', firestore: { rules: await readFile(new URL('../firestore.rules', import.meta.url), 'utf8'), host: '127.0.0.1', port: 8080 } });
@@ -30,7 +33,7 @@ await env.withSecurityRulesDisabled(async ctx => {
   await setDoc(doc(db, 'leads', 'legacy-browser'), { name: 'Legacy Fixture', business: 'Legacy Business', email: 'legacy@example.com', phone: '7025550100', service: 'Website Development', message: 'Legacy project', status: 'new', quoteAmount: null, followUpDate: '', internalNotes: 'Private legacy note', createdAt: Timestamp.now(), updatedAt: Timestamp.now() });
 });
 const adminDb = env.authenticatedContext(seededAdmin.localId, { email: adminEmail }).firestore();
-const server = await startPreview(4174, new Map([['/firebase-config.js', config]]));
+const server = await startPreview(4174, new Map([['/firebase-config.js', config], ['/firebase-messaging-sw.js', (await buildWorker({test:true,write:false})).outputFiles[0].text]]));
 const browser = await chromium.launch({ channel: process.platform === 'win32' ? 'msedge' : undefined, headless: true });
 const failures = [];
 const successes = [];
@@ -269,7 +272,7 @@ try {
     for (let i = 0; i < 55; i++) await setDoc(doc(db, 'adminNotifications', `fixture-${i}`), {
       type: 'new-contact', category: i === 54 ? 'quotes' : 'contacts', title: i === 53 ? 'New General Contact' : `Notification fixture ${i}`, message: i === 53 ? 'General Visitor · Invoice question' : '<script>private activity</script>',
       clientId: null, projectId: null, requestId: null, read: i < 53, dashboardEnabled: true,
-      smsStatus: i === 54 ? 'failed' : 'simulated', smsErrorCode: i === 54 ? 21610 : null,
+      pushStatus: i === 54 ? 'failed' : 'simulated',
       link: i === 54 ? `crm.html?lead=${aliceLead.id}` : `crm-support.html?contact=${contactId}`, createdAt: Timestamp.fromMillis(Date.now() + i)
     });
     await setDoc(doc(db, 'adminSettings', 'notifications'), { ...defaultNotificationSettings(), updatedAt: Timestamp.now(), updatedBy: seededAdmin.localId });
@@ -279,7 +282,7 @@ try {
   assert.equal(await admin.locator('#notificationList article').count(), 50); assert.equal(await admin.locator('#notificationList script').count(), 0);
   assert.ok(await admin.locator('#notifyEmail').isDisabled());
   await admin.locator('#loadMoreNotifications').click(); await hasText(admin, '#notificationList', 'Notification fixture 0'); assert.equal(await admin.locator('#notificationList article').count(), 55);
-  await admin.locator('#notificationFilter').selectOption('sms-issues'); assert.equal(await admin.locator('#notificationList article').count(), 1); await hasText(admin, '#notificationList', '21610');
+  await admin.locator('#notificationFilter').selectOption('push-issues'); assert.equal(await admin.locator('#notificationList article').count(), 1); await hasText(admin, '#notificationList', 'Push failed');
   await admin.locator('#notificationList').getByRole('button', { name: 'Mark Read' }).click(); await hasText(admin, '#notificationUnread', '1 unread');
   // The badge reflects optimistic local snapshots; wait for server acknowledgement before checking through a separate SDK client.
   for (let attempt = 0; attempt < 50; attempt++) {
@@ -292,12 +295,12 @@ try {
   assert.ok(await admin.locator('#clientPanel-messages').isVisible());
   await admin.goto(`${base}/crm-support.html?contact=${contactId}`); await hasText(admin, '#contactBody', 'explain my service invoice');
   await admin.goto(`${base}/crm-notifications.html`); await hasText(admin, '#notificationUnread', '1 unread');
-  await admin.locator('#notifySms').uncheck(); await admin.locator('#notifyDashboard').uncheck(); await admin.locator('#notify-bugFix').uncheck();
+  await admin.locator('#notifyPush').uncheck(); await admin.locator('#notifyDashboard').uncheck(); await admin.locator('#notify-bugFix').uncheck();
   await admin.locator('#saveNotificationSettings').click(); await hasText(admin, '#notificationSettingsStatus', 'settings saved'); await hasText(admin, '#notificationUnread', '0 unread');
   await admin.reload(); await admin.locator('#notificationApp').waitFor({ state: 'visible' });
-  await admin.waitForFunction(() => !document.querySelector('#notifySms').checked);
+  await admin.waitForFunction(() => !document.querySelector('#notifyPush').checked);
   assert.equal(await admin.locator('#notify-bugFix').isChecked(), false); assert.equal(await admin.locator('#notifyDashboard').isChecked(), false);
-  await admin.locator('#notifySms').check(); await admin.locator('#notifyDashboard').check(); await admin.locator('#notify-bugFix').check();
+  await admin.locator('#notifyPush').check(); await admin.locator('#notifyDashboard').check(); await admin.locator('#notify-bugFix').check();
   await admin.locator('#saveNotificationSettings').click(); await hasText(admin, '#notificationSettingsStatus', 'settings saved'); await hasText(admin, '#notificationUnread', '1 unread');
   await admin.locator('#notificationFilter').selectOption('unread'); await hasText(admin, '#notificationList', 'New General Contact');
   await admin.getByRole('link', { name: 'Notification Settings', exact: true }).click(); await admin.locator('#notificationSettingsTitle').waitFor({ state: 'visible' });
