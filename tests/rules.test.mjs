@@ -41,7 +41,7 @@ before(async () => {
 after(async () => { await env?.cleanup(); });
 
 test('notification history is admin-only, server-created and browser updates are read receipts only', async () => {
-  await env.withSecurityRulesDisabled(ctx => setDoc(doc(ctx.firestore(), 'adminNotifications', 'one'), { type: 'new-contact', title: 'Contact', read: false, smsStatus: 'accepted', createdAt: Timestamp.now() }));
+  await env.withSecurityRulesDisabled(ctx => setDoc(doc(ctx.firestore(), 'adminNotifications', 'one'), { type: 'new-contact', title: 'Contact', read: false, pushStatus: 'accepted', createdAt: Timestamp.now() }));
   for (const db of [alice, bob, anonymous, inactive]) {
     await assertFails(getDoc(doc(db, 'adminNotifications', 'one')));
     await assertFails(getDocs(collection(db, 'adminNotifications')));
@@ -49,7 +49,7 @@ test('notification history is admin-only, server-created and browser updates are
   }
   await assertSucceeds(getDoc(doc(admin, 'adminNotifications', 'one')));
   await assertSucceeds(updateDoc(doc(admin, 'adminNotifications', 'one'), { read: true, readAt: now(), readBy: 'admin' }));
-  for (const change of [{ smsStatus: 'delivered' }, { read: false }, { readBy: 'alice' }, { phone: 'forbidden' }]) await assertFails(updateDoc(doc(admin, 'adminNotifications', 'one'), { readAt: now(), ...change }));
+  for (const change of [{ pushStatus: 'delivered' }, { read: false }, { readBy: 'alice' }, { phone: 'forbidden' }]) await assertFails(updateDoc(doc(admin, 'adminNotifications', 'one'), { readAt: now(), ...change }));
   await assertFails(setDoc(doc(admin, 'adminNotifications', 'injected'), { read: false }));
   await assertFails(deleteDoc(doc(admin, 'adminNotifications', 'one')));
 });
@@ -61,8 +61,8 @@ test('only active admins can save strict notification settings without secrets o
     await assertFails(setDoc(doc(db, 'adminSettings', 'notifications'), valid()));
   }
   await assertSucceeds(setDoc(doc(admin, 'adminSettings', 'notifications'), valid()));
-  for (const change of [{ adminPhone: 'forbidden' }, { updatedBy: 'alice' }, { schemaVersion: 2 },
-    { channels: { sms: true, dashboard: true, email: true } }, { channels: { sms: 'true', dashboard: true, email: false } },
+  for (const change of [{ credential: 'forbidden' }, { webPushPublicKey: 'invalid' }, { updatedBy: 'alice' }, { schemaVersion: 99 },
+    { channels: { push: true, dashboard: true, email: true } }, { channels: { push: 'true', dashboard: true, email: false } },
     { categories: { ...defaultNotificationSettings().categories, contacts: 'true' } }, { categories: { quotes: true } }]) {
     await assertFails(setDoc(doc(admin, 'adminSettings', 'notifications'), { ...valid(), ...change }));
   }
@@ -76,6 +76,36 @@ test('delivery reservations are inaccessible to every browser role including adm
     await assertFails(setDoc(doc(db, '_notificationDeliveries', 'one'), { status: 'attempting' }));
     await assertFails(deleteDoc(doc(db, '_notificationDeliveries', 'one')));
   }
+});
+
+const device = () => ({ token: 'test-only-fcm-registration-token', platform: 'Android', enabled: true, createdAt: now(), updatedAt: now(), lastUsedAt: now() });
+test('only an active admin can register, read, update and delete their own devices', async () => {
+  const path=['users','admin','notificationDevices','generated-device-id-123456'];
+  const second=env.authenticatedContext('second-admin').firestore();
+  await env.withSecurityRulesDisabled(ctx=>setDoc(doc(ctx.firestore(),'roles','second-admin'),{role:'admin',active:true}));
+  await assertSucceeds(setDoc(doc(admin,...path),device()));
+  for(const db of [alice,bob,anonymous,inactive,second]) {
+    await assertFails(getDoc(doc(db,...path)));
+    await assertFails(getDocs(collection(db,'users','admin','notificationDevices')));
+    await assertFails(setDoc(doc(db,...path),device()));
+    await assertFails(updateDoc(doc(db,...path),{enabled:false,updatedAt:now(),lastUsedAt:now()}));
+    await assertFails(deleteDoc(doc(db,...path)));
+  }
+  await assertFails(setDoc(doc(alice,'users','alice','notificationDevices','generated-device-id-123456'),device()));
+  await assertSucceeds(getDocs(collection(admin,'users','admin','notificationDevices')));
+  const created=(await getDoc(doc(admin,...path))).data().createdAt;
+  await assertSucceeds(updateDoc(doc(admin,...path),{token:'a-refreshed-fcm-registration-token',enabled:false,updatedAt:now(),lastUsedAt:now()}));
+  assert.ok((await getDoc(doc(admin,...path))).data().createdAt.isEqual(created));
+  await assertSucceeds(deleteDoc(doc(admin,...path)));
+});
+test('device schema rejects extra fields, invalid IDs, stale timestamps and createdAt changes',async()=>{
+  const ref=doc(admin,'users','admin','notificationDevices','schema-device-id-123456');
+  for(const change of [{token:''},{token:'x'.repeat(4097)},{platform:'unknown'},{enabled:'true'},{credential:'secret'},{lastUsedAt:Timestamp.fromMillis(0)},{createdAt:Timestamp.fromMillis(0)}]) await assertFails(setDoc(ref,{...device(),...change}));
+  await assertFails(setDoc(doc(admin,'users','admin','notificationDevices','raw:token'),device()));
+  await assertSucceeds(setDoc(ref,device()));
+  await assertFails(updateDoc(ref,{createdAt:now(),updatedAt:now(),lastUsedAt:now()}));
+  await assertFails(updateDoc(ref,{enabled:false}));
+  await assertSucceeds(deleteDoc(ref));
 });
 
 test('anonymous quotes remain valid; public cannot read leads or summaries', async () => {

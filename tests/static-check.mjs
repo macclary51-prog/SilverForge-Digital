@@ -18,8 +18,8 @@ for (const name of files.filter(file => file.endsWith('.html'))) {
   for (const [, target] of html.matchAll(/(?:href|src)="([^"]+)"/g)) {
     if (/^(?:[a-z][\w+.-]*:|\/\/|#)/i.test(target)) continue;
     const file = target.split(/[?#]/)[0];
-    if (!file || !/\.(html|css|js|png|svg|ico)$/.test(file)) continue;
-    assert.ok(fs.existsSync(new URL(file, root)), `${name}: broken local link ${target}`); links++;
+    if (!file || !/\.(html|css|js|png|svg|ico|webmanifest)$/.test(file)) continue;
+    assert.ok(fs.existsSync(new URL(file.replace(/^\//, ''), root)), `${name}: broken local link ${target}`); links++;
   }
   for (const [, attrs, label] of html.matchAll(/<a\b([^>]+)>([\s\S]*?)<\/a>/g)) {
     if (/Request a Quote|Start a Project/.test(label)) assert.ok(/href="quote\.html"/.test(attrs), `${name}: quote CTA must use quote.html`);

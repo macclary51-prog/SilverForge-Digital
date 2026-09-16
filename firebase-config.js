@@ -13,14 +13,8 @@ import {
 // Firebase web configuration identifies the public SilverForge Firebase project.
 // It is not an administrator password and must never be replaced with
 // service-account or private-key data.
-export const firebaseConfig = {
-    apiKey: "AIzaSyAckPM0z-2SncyAWJuapMURojbHwIPMxaU",
-    authDomain: "silverforge-digital.firebaseapp.com",
-    projectId: "silverforge-digital",
-    storageBucket: "silverforge-digital.firebasestorage.app",
-    messagingSenderId: "684696359962",
-    appId: "1:684696359962:web:4f42a4ab8a888854182da3"
-};
+import { firebaseConfig } from "./firebase-public-config.js";
+export { firebaseConfig };
 
 const requiredConfigKeys = [
     "apiKey",
@@ -51,3 +45,6 @@ export const auth =
 
 export const db =
     app ? getFirestore(app) : null;
+
+import { protectPushSession } from './push-auth-state.js';
+if (auth) protectPushSession(auth);

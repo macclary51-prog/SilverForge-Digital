@@ -1,3 +1,5 @@
+import { adminLoginPath } from "./push-routing.js";
+import { signOutWithPushCleanup } from "./push-session.js";
 import {
     auth,
     db,
@@ -7,8 +9,7 @@ import { quoteSummary } from "./quote-summary.js";
 import { createClientWorkspace, linkProjectToClient } from "./client-workspace.js?v=2";
 
 import {
-    onAuthStateChanged,
-    signOut
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 
 import {
@@ -122,8 +123,7 @@ let linkingClient = false;
 const workspace = createClientWorkspace({ getAccounts: () => accounts, getLeads: () => leads, openLead, onMetrics: renderAccounts });
 
 function redirectToLogin(reason = "") {
-    const search = reason ? `?reason=${encodeURIComponent(reason)}` : "";
-    window.location.replace(`crm-login.html${search}`);
+    window.location.replace(adminLoginPath(reason));
 }
 
 function setAccessMessage(message) {
@@ -756,7 +756,7 @@ function subscribeToLeads() {
             );
 
             if (error.code === "permission-denied") {
-                await signOut(auth);
+                await signOutWithPushCleanup();
                 redirectToLogin("unauthorized");
             }
         }
@@ -1449,7 +1449,7 @@ signOutButton.addEventListener("click", async () => {
     stopCommunicationSubscription();
 
     try {
-        await signOut(auth);
+        await signOutWithPushCleanup();
     } finally {
         redirectToLogin();
     }
@@ -1479,7 +1479,7 @@ if (!isFirebaseConfigured || !auth || !db) {
 
                 if (!authorized) {
                     pendingRedirectReason = "unauthorized";
-                    await signOut(auth);
+                    await signOutWithPushCleanup();
                     return;
                 }
 
@@ -1503,7 +1503,7 @@ if (!isFirebaseConfigured || !auth || !db) {
             } catch (error) {
                 console.error("CRM authorization failed:", error);
                 pendingRedirectReason = "unauthorized";
-                await signOut(auth);
+                await signOutWithPushCleanup();
             }
         },
         (error) => {

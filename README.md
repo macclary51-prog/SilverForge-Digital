@@ -181,7 +181,7 @@ Activity is an admin-only view assembled from existing timestamps. It shows acco
 
 ### Validation and deployment
 
-`npm test` includes 32 Firestore security tests and browser flows for the existing portal plus workspace selection, scoped projects/support, direct messaging, unread/read state, email-only and combined drafts, rejected-save handling, private note CRUD, confirmed legacy linking/unlinking and desktop/mobile layouts. Email-launch tests intercept `mailto:` links and inspect their contents without sending email or opening a real mail application. All test data stays in `demo-silverforge` emulators.
+`npm test` includes 34 Firestore security tests and browser flows for the existing portal plus workspace selection, scoped projects/support, direct messaging, unread/read state, email-only and combined drafts, rejected-save handling, private note CRUD, confirmed legacy linking/unlinking, push-device registration and desktop/mobile layouts. Email-launch tests intercept `mailto:` links and inspect their contents without sending email or opening a real mail application. All test data stays in `demo-silverforge` emulators.
 
 Verify the Firebase project is **silverforge-digital** (project number **684696359962**) before deploying rules. This checkout has no `.firebaserc`; explicitly pin the existing project:
 
@@ -189,10 +189,12 @@ Verify the Firebase project is **silverforge-digital** (project number **6846963
 firebase deploy --only firestore:rules --project silverforge-digital --non-interactive
 ```
 
-For the workspace feature alone, deploy no other Firebase services. The SMS extension has separate setup instructions below. If CLI authentication is missing, publish the repository's complete `firestore.rules` in Firebase Console → Firestore Database → Rules instead. Website files use the existing GitHub Pages release process.
+For the workspace feature alone, deploy no other Firebase services. The push notification extension has separate setup instructions below. If CLI authentication is missing, publish the repository's complete `firestore.rules` in Firebase Console → Firestore Database → Rules instead. Website files use the existing GitHub Pages release process.
 
 The atomic-write design follows Firebase's [transaction guidance](https://firebase.google.com/docs/firestore/manage-data/transactions) and [rule validation using getAfter](https://firebase.google.com/docs/firestore/security/rules-conditions).
 
-## Admin notifications and SMS
+## Admin push notifications and PWA
 
-The admin notification center extends the existing CRM with history, unread badges and category/channel preferences. Secure Cloud Functions use Twilio for optional SMS; live delivery requires Blaze and four Firebase secrets. See [the complete setup guide](docs/ADMIN_NOTIFICATIONS.md) for schema, rules, testing, exact commands, verified deployment prerequisites and the first live test checklist.
+The notification center keeps history, unread badges, category/channel preferences and mark-all-read. Active admins can explicitly enable multiple private devices for Firebase Cloud Messaging and install the branded admin PWA. FCM itself has no message charge, but the secure Cloud Functions sender still requires Blaze. See [the complete setup guide](docs/ADMIN_NOTIFICATIONS.md) for files, schema, strict device rules, public-key setup, exact deployment commands, Android installation and the first live notification checklist. No server credentials belong in browser code.
+
+Run `npm run build:worker` after worker/shared-source or Firebase dependency changes and commit the generated `firebase-messaging-sw.js`. `npm test` includes 34 rule tests, the existing website/CRM regression suite and the push/PWA browser suite; `npm run test:notifications` covers sender unit tests and actual Firestore/Functions emulator triggers. FCM token issuance is mocked locally, so successful emulator checks do not establish live phone delivery. The root development toolchain retains upstream moderate audit findings; the deployed Functions production dependency tree has no reported advisories at validation time.

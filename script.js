@@ -38,3 +38,9 @@ document
     .forEach(function (year) {
         year.textContent = new Date().getFullYear();
     });
+// A previously enabled admin can receive foreground alerts while browsing public pages.
+try {
+    if (Object.keys(localStorage).some(key => key.startsWith('silverforge-push-optin:') && localStorage.getItem(key) === 'true')) {
+        import('./push-foreground.js').catch(() => {});
+    }
+} catch { /* Public navigation remains available when browser storage is restricted. */ }

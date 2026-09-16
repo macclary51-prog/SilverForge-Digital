@@ -4,6 +4,9 @@
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow"><title>Notifications | SilverForge Digital Solutions</title>
   <link rel="stylesheet" href="crm.css"><link rel="stylesheet" href="portal.css"><link rel="stylesheet" href="crm-notifications.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#08294d">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
 </head>
 <body class="crm-page">
   <div class="crm-access-gate" id="accessGate" role="status"><div class="crm-spinner" aria-hidden="true"></div><p id="accessMessage">Verifying administrator access...</p></div>
@@ -13,31 +16,36 @@
       <div class="crm-account"><a class="crm-secondary-button" href="crm.html">Lead CRM / Clients</a><a class="crm-secondary-button" href="crm-support.html">Support Inbox</a><span id="adminEmail"></span><button class="crm-secondary-button" type="button" id="signOutButton">Sign out</button></div>
     </header>
     <main class="crm-main portal-stack">
-      <div class="crm-page-heading"><div><span class="crm-eyebrow">Stay up to date</span><h1>Notification Center</h1><p>Client activity, message alerts and text delivery history.</p></div><strong class="notification-unread" id="notificationUnread" aria-live="polite">0 unread</strong></div>
+      <div class="crm-page-heading"><div><span class="crm-eyebrow">Stay up to date</span><h1>Notification Center</h1><p>Client activity, message alerts and push notification history.</p></div><strong class="notification-unread" id="notificationUnread" aria-live="polite">0 unread</strong></div>
       <nav class="portal-actions" aria-label="Notification sections"><a class="crm-secondary-button" href="#notificationHistoryTitle">View History</a><a class="crm-secondary-button" href="#notificationSettingsTitle">Notification Settings</a></nav>
       <section class="portal-card" aria-labelledby="notificationHistoryTitle">
         <h2 id="notificationHistoryTitle">Notification History</h2>
-        <div class="portal-filters"><label class="crm-field" for="notificationFilter"><span>Show</span><select id="notificationFilter"><option value="all">All history</option><option value="unread">Unread dashboard alerts</option><option value="sms-issues">SMS needs attention</option></select></label><label class="crm-field" for="notificationCategory"><span>Category</span><select id="notificationCategory"><option value="all">All categories</option></select></label></div>
+        <button class="crm-secondary-button" type="button" id="markAllNotificationsRead">Mark All as Read</button>
+        <p class="crm-status" id="notificationActionStatus" role="status" aria-live="polite"></p>
+        <div class="portal-filters"><label class="crm-field" for="notificationFilter"><span>Show</span><select id="notificationFilter"><option value="all">All history</option><option value="unread">Unread dashboard alerts</option><option value="push-issues">Push needs attention</option></select></label><label class="crm-field" for="notificationCategory"><span>Category</span><select id="notificationCategory"><option value="all">All categories</option></select></label></div>
         <p class="crm-status" id="notificationStatus" role="status" aria-live="polite"></p><div class="portal-list" id="notificationList"></div>
         <button class="crm-secondary-button" type="button" id="loadMoreNotifications" hidden>Load Older Notifications</button>
       </section>
       <section class="portal-card" aria-labelledby="notificationSettingsTitle">
         <h2 id="notificationSettingsTitle">Notification Settings</h2>
-        <p>These preferences apply to SilverForge's admin alerts. Phone numbers and provider credentials are managed securely outside the website.</p>
+        <p>These preferences apply to all SilverForge admin alerts. Each administrator enables their own devices below.</p>
         <form class="crm-form" id="notificationSettingsForm">
           <fieldset><legend>Delivery channels</legend><div class="notification-options">
-            <label><input id="notifySms" type="checkbox" checked> Text Message</label>
+            <label><input id="notifyPush" type="checkbox" checked> Push Notifications</label>
             <label><input id="notifyDashboard" type="checkbox" checked> Dashboard Notifications</label>
-            <label><input id="notifyEmail" type="checkbox" disabled> Email — no provider configured</label>
+            <label><input id="notifyEmail" type="checkbox" disabled> Email Notifications — not available</label>
           </div></fieldset>
-          <p>History is always saved. Turning off Dashboard Notifications hides unread badges. Text alerts require Twilio setup; changing this preference does not configure a phone number.</p>
+          <p>History is always saved. Turning off Dashboard Notifications hides unread badges. Push alerts require an enabled device and the Firebase sender setup.</p>
           <fieldset><legend>Notify me about</legend><div class="notification-options" id="notificationCategorySettings"></div></fieldset>
+          <label class="crm-field" for="webPushPublicKey"><span>Firebase Web Push public key</span><input id="webPushPublicKey" type="text" maxlength="87" pattern="[A-Za-z0-9_-]{87}" autocomplete="off" spellcheck="false"><small>Copy the public key from Firebase Project Settings → Cloud Messaging → Web Push certificates. Never paste a private key.</small></label>
           <button class="crm-primary-button" type="submit" id="saveNotificationSettings">Save Notification Settings</button>
           <p class="crm-status" id="notificationSettingsStatus" role="status" aria-live="polite"></p>
         </form>
       </section>
+      <section class="portal-card" aria-labelledby="notificationDevicesTitle"><h2 id="notificationDevicesTitle">Your Notification Devices</h2><p>Enable this browser with the button above. Sign in on each phone or computer to add it. Removing a device stops future alerts to that registration.</p><div class="portal-list" id="notificationDeviceList"></div></section>
     </main>
   </div>
   <script type="module" src="crm-notifications.js"></script>
+  <script type="module" src="push-client.js"></script>
 </body>
 </html>

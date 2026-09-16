@@ -6,6 +6,6 @@
 .notification-unread { border: 1px solid #385675; border-radius: 12px; padding: 16px; color: #8ee4ff; }
 .notification-card-unread { border-left: 4px solid #38cde0; }
 .notification-body { white-space: pre-wrap; overflow-wrap: anywhere; }
-.notification-sms { color: #becddd; margin: 12px 0; }
+.notification-push { color: #becddd; margin: 12px 0; }
 #loadMoreNotifications { margin-top: 20px; }
 @media (max-width: 640px) { .notification-options { grid-template-columns: 1fr; } }

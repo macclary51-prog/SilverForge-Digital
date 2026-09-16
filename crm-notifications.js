@@ -1,9 +1,11 @@
 import { auth, db, isFirebaseConfigured } from "./firebase-config.js";
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { collection, doc, getDocs, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc, startAfter, updateDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { collection, doc, getDocs, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc, startAfter, updateDoc, where, writeBatch } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { $, date, element, message, millis, options } from "./portal-shared.js";
-import { defaultNotificationSettings, notificationCategories, smsStatusLabel } from "./notification-shared.js";
+import { defaultNotificationSettings, notificationCategories, pushStatusLabel, normalizeNotificationSettings } from "./notification-shared.js";
 import { watchUnreadNotifications } from "./notification-badge.js";
+
+import { signOutWithPushCleanup } from "./push-session.js";
 
 let user; let stops = []; let stopRole = () => {}; let records = new Map(); let cursor;
 let dirty = false; let saving = false; let loading = false; let generation = 0;
@@ -14,8 +16,10 @@ for (const [key, label] of Object.entries(notificationCategories)) {
 }
 function clear() { generation++; stops.forEach(stop => stop()); stops = []; records.clear(); cursor = null; $("notificationList").replaceChildren(); $("notificationApp").hidden = true; $("accessGate").hidden = false; }
 function deny() { clear(); location.replace("crm-login.html?reason=unauthorized"); }
-function applySettings(settings) {
-  $("notifySms").checked = settings.channels?.sms === true; $("notifyDashboard").checked = settings.channels?.dashboard === true;
+function applySettings(value) {
+  const settings = normalizeNotificationSettings(value);
+  $("webPushPublicKey").value = settings.webPushPublicKey;
+  $("notifyPush").checked = settings.channels?.push === true; $("notifyDashboard").checked = settings.channels?.dashboard === true;
   for (const key of Object.keys(notificationCategories)) $("notify-" + key).checked = settings.categories?.[key] === true;
 }
 async function markRead(item) {
@@ -33,12 +37,12 @@ function render() {
   const filter = $("notificationFilter").value; const category = $("notificationCategory").value;
   const items = [...records.values()].sort((a, b) => millis(b.createdAt) - millis(a.createdAt)).filter(item => (category === "all" || category === item.category)
     && (filter !== "unread" || (!item.read && item.dashboardEnabled))
-    && (filter !== "sms-issues" || ["failed", "undelivered", "unknown", "not-configured", "attempting"].includes(item.smsStatus)));
+    && (filter !== "push-issues" || ["failed", "partial", "unknown", "no-devices", "attempting"].includes(item.pushStatus)));
   $("notificationList").replaceChildren();
   message($("notificationStatus"), items.length ? `${items.length} notification(s) shown from ${records.size} loaded.` : "No matching notifications. New activity appears here once server notifications are configured.");
   for (const item of items) {
     const card = element("article", "", `portal-record ${!item.read && item.dashboardEnabled ? "notification-card-unread" : ""}`);
-    card.append(element("h3", item.title), element("small", `${notificationCategories[item.category] || "Activity"} · ${date(item.createdAt)} · ${item.read ? "Read" : "Unread"}`), element("p", item.message, "notification-body"), element("p", `${smsStatusLabel(item)}${item.smsErrorCode ? ` · Code ${item.smsErrorCode}` : ""}`, "notification-sms"));
+    card.append(element("h3", item.title), element("small", `${notificationCategories[item.category] || "Activity"} · ${date(item.createdAt)} · ${item.read ? "Read" : "Unread"}`), element("p", item.message, "notification-body"), element("p", pushStatusLabel(item), "notification-push"));
     const actions = element("div", "", "portal-actions");
     const link = safeLink(item.link);
     if (link) { const open = element("a", "Open Related Activity", "crm-secondary-button"); open.href = link; actions.append(open); }
@@ -66,7 +70,7 @@ $("notificationSettingsForm").addEventListener("input", () => { dirty = true; })
 $("notificationSettingsForm").addEventListener("submit", async event => {
   event.preventDefault(); if (!user || saving) return;
   saving = true; $("saveNotificationSettings").disabled = true; const current = generation;
-  const data = { ...defaultNotificationSettings(), channels: { sms: $("notifySms").checked, dashboard: $("notifyDashboard").checked, email: false }, categories: Object.fromEntries(Object.keys(notificationCategories).map(key => [key, $("notify-" + key).checked])), updatedAt: serverTimestamp(), updatedBy: user.uid };
+  const data = { ...defaultNotificationSettings(), webPushPublicKey: $("webPushPublicKey").value.trim(), channels: { push: $("notifyPush").checked, dashboard: $("notifyDashboard").checked, email: false }, categories: Object.fromEntries(Object.keys(notificationCategories).map(key => [key, $("notify-" + key).checked])), updatedAt: serverTimestamp(), updatedBy: user.uid };
   try { await setDoc(doc(db, "adminSettings", "notifications"), data); if (current === generation) { dirty = false; message($("notificationSettingsStatus"), "Notification settings saved.", "success"); } }
   catch (error) { console.error("Notification settings save failed:", error); if (current === generation) message($("notificationSettingsStatus"), "Settings could not be saved. Please try again.", "error"); }
   finally { saving = false; $("saveNotificationSettings").disabled = false; }
@@ -82,7 +86,26 @@ $("loadMoreNotifications").addEventListener("click", async () => {
   finally { loading = false; $("loadMoreNotifications").disabled = false; }
 });
 $("notificationFilter").addEventListener("change", render); $("notificationCategory").addEventListener("change", render);
-$("signOutButton").addEventListener("click", () => signOut(auth).catch(() => message($("notificationStatus"), "Sign out failed. Try again.", "error")));
+$("markAllNotificationsRead").addEventListener("click", async () => {
+  const current = generation, uid = user?.uid;
+  if (!uid) return;
+  $("markAllNotificationsRead").disabled = true;
+  try {
+    const unread = await getDocs(query(collection(db, "adminNotifications"), where("read", "==", false)));
+    for (let offset = 0; offset < unread.size; offset += 450) {
+      if (current !== generation) return;
+      const batch = writeBatch(db);
+      unread.docs.slice(offset, offset + 450).forEach(item => batch.update(item.ref, { read: true, readAt: serverTimestamp(), readBy: uid }));
+      await batch.commit();
+    }
+    if (current === generation) {
+      unread.docs.forEach(item => { if (records.has(item.id)) records.set(item.id, { ...records.get(item.id), read: true }); }); render();
+      message($("notificationActionStatus"), `${unread.size} notifications marked as read.`, "success");
+    }
+  } catch { message($("notificationActionStatus"), "Some notifications could not be marked read. Try again.", "error"); }
+  finally { $("markAllNotificationsRead").disabled = false; }
+});
+$("signOutButton").addEventListener("click", () => signOutWithPushCleanup().catch(() => message($("notificationStatus"), "Sign out failed. Try again.", "error")));
 if (!isFirebaseConfigured || !auth || !db) $("accessMessage").textContent = "Notifications are temporarily unavailable.";
 else onAuthStateChanged(auth, current => {
   stopRole(); clear(); user = current; dirty = false; if (!user) { location.replace("crm-login.html"); return; }
