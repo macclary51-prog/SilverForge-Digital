@@ -1,5 +1,7 @@
 # Admin push notifications
 
+**September 21, 2026 update:** The owner reports that the project is now on Blaze and has requested Twilio SMS in addition to the existing FCM implementation. See [administrator SMS setup](ADMIN_SMS.md). The September 15 release notes below are historical; current deployed function/device state has not been re-verified. SMS secrets and deployment remain owner setup steps. The full Functions deployment now includes the five SMS exports as well as the six FCM exports, so follow the SMS guide before deploying the entire codebase.
+
 SilverForge keeps the existing CRM, customer dashboard, quotes, general contact, projects, support requests and conversations. Six Firestore create triggers save admin history and then send Firebase Cloud Messaging (FCM) data messages to enabled admin devices. A send failure cannot roll back the customer's original document.
 
 ## Billing and current deployment prerequisites
@@ -28,7 +30,7 @@ PR #9 was merged as `a53f2b227167d9d46134502c67f4bcdc068c5b17` and successfully 
 | `scripts/build-icons.ps1` | Reproducible square icons from the existing unchanged logo |
 | `firestore.rules`, tests, package manifests/locks | Strict permissions, reproducible dependencies and local validation |
 
-The previous provider adapter, callback, dependency, secret declarations and configuration UI were removed. There is no outbound provider callback or phone-number setting. `firebase.json` still defines only the existing `admin-alerts` function codebase and Firestore rules; the website remains on its existing GitHub Pages hosting.
+The September 15 release removed the previous provider adapter, callback, dependency, secret declarations and configuration UI. The September 21 SMS addition restores only a server-side Twilio sender and secret declarations; there is still no provider callback or browser phone-number setting. `firebase.json` defines the existing `admin-alerts` function codebase and Firestore rules; the website remains on its existing GitHub Pages hosting.
 
 ### Events and routes
 
@@ -71,17 +73,17 @@ The worker caches **only** `/offline.html` and `/icons/icon-192.png`. It never s
 ## Firebase Console setup
 
 1. Open [the SilverForge Firebase project](https://console.firebase.google.com/project/silverforge-digital/settings/general). Confirm project ID **silverforge-digital** and number **684696359962**. Keep its existing app/configuration.
-2. Upgrade **this project** to Blaze to deploy the secure Cloud Functions sender. Set an appropriate budget alert; a budget alert does not cap spending. Do not change projects to bypass this prerequisite.
+2. Confirm Blaze is enabled on **this project** (the owner reports the upgrade is complete). Set an appropriate budget alert; a budget alert does not cap spending. Do not change projects to bypass this prerequisite.
 3. Project settings → **Cloud Messaging** → **Web Push certificates**: use the existing key pair, or choose **Generate key pair** if none exists. Copy only the public key. Do not rotate an existing key unnecessarily.
 4. Confirm the Firebase Cloud Messaging API (HTTP v1) is enabled. For token registration errors, also check the **FCM Registration API** in Google Cloud APIs & Services for this same project, as described in Firebase's web setup guide. Do not enable the legacy messaging API.
-5. Deploy the rules and six functions below, and publish the reviewed website branch through the existing GitHub Pages process.
+5. For a fresh FCM setup, deploy its rules/functions and publish the reviewed website branch through the existing GitHub Pages process. For the September 21 SMS addition, follow the [Functions-only SMS deployment guide](ADMIN_SMS.md); its rules and website files are unchanged.
 6. Sign into **Notification Center → Notification Settings**, paste the public key, leave Push and desired categories enabled, and click **Save Notification Settings**. Existing admins are still authorized exclusively by `roles/{uid}` with `role:"admin", active:true`.
 
 The deployed functions use the platform service account/Application Default Credentials through Firebase Admin. No service-account JSON, private VAPID key, provider secret or server key belongs in the browser, GitHub or Firestore settings. Standard Firebase deployment configures the managed runtime; if organization policy or custom IAM blocks FCM, grant only the necessary FCM send permissions to that runtime identity rather than supplying browser credentials.
 
 ## Exact local validation and deployment commands
 
-Run from the repository root with Node 22 and Java 21 available. On this Windows machine Java 21 is at `C:\Program Files\Android\openjdk\jdk-21.0.8`.
+Run from the repository root with Node 22 and Java 21 or newer on PATH.
 
 ```powershell
 npm ci
@@ -95,7 +97,7 @@ npm run preview
 
 Open `http://127.0.0.1:4173` for a visual preview. **The ordinary preview uses the real project configuration**; use the automated emulator tests for isolated writes. Tests replace the config with `demo-silverforge` and block production data endpoints. Browser automation uses installed Edge on Windows; on other platforms install Playwright Chromium with `npx playwright install chromium`.
 
-Verify the project before any deployment. There is no `.firebaserc`; explicitly pin it on every command:
+Verify the project before any deployment. `.firebaserc` now pins the default project; still explicitly select it on every command. Configure all four SMS secrets using [ADMIN_SMS.md](ADMIN_SMS.md) before deploying this full codebase. The following rules deployment is for initial FCM setup; SMS itself needs only Functions:
 
 ```powershell
 npx firebase login
@@ -108,7 +110,7 @@ npx firebase functions:list --project silverforge-digital
 
 The function predeploy guard rejects any other `GCLOUD_PROJECT`. Do not use an unscoped `firebase deploy`. No Firebase Hosting deployment is needed. If CLI sign-in is unavailable, publish the complete `firestore.rules` in **Firebase Console → Firestore Database → Rules → Publish**; function deployment still needs an authenticated CLI and Blaze.
 
-Expected function exports in `us-central1`: `adminNotifyQuote`, `adminNotifyContact`, `adminNotifyAccount`, `adminNotifyRequest`, `adminNotifyClientMessage`, `adminNotifyRequestReply`. A codebase-scoped deployment may offer to delete an obsolete export if one was independently deployed earlier; inspect the name and delete only the obsolete notification callback. Do not bulk-delete unrelated resources.
+Expected FCM exports in `us-central1`: `adminNotifyQuote`, `adminNotifyContact`, `adminNotifyAccount`, `adminNotifyRequest`, `adminNotifyClientMessage`, `adminNotifyRequestReply`. The same codebase also exports `notifyNewQuote`, `notifyNewContact`, `notifyNewSupportTicket`, `notifyNewClientMessage`, `notifyNewSupportReply` for SMS. If deployment offers to delete an independently deployed export, inspect it first and preserve unrelated resources.
 
 ```powershell
 npx firebase functions:log --only adminNotifyQuote,adminNotifyContact,adminNotifyAccount,adminNotifyRequest,adminNotifyClientMessage,adminNotifyRequestReply --project silverforge-digital

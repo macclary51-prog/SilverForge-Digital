@@ -7,7 +7,7 @@
   },
   "scripts": {
     "verify:project": "node scripts/verify-project.js",
-    "build": "node --check src/index.js && node --check src/notifications.js && node --check src/store.js && node --check src/push.js && node --check src/actor.js",
+    "build": "node scripts/build.js",
     "test": "node --test test/*.test.js"
   },
   "overrides": {
@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "firebase-admin": "^14.4.0",
-    "firebase-functions": "^7.3.2"
+    "firebase-functions": "^7.3.2",
+    "twilio": "^6.1.1"
   }
 }

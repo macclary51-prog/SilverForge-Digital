@@ -183,7 +183,7 @@ Activity is an admin-only view assembled from existing timestamps. It shows acco
 
 `npm test` includes 34 Firestore security tests and browser flows for the existing portal plus workspace selection, scoped projects/support, direct messaging, unread/read state, email-only and combined drafts, rejected-save handling, private note CRUD, confirmed legacy linking/unlinking, push-device registration and desktop/mobile layouts. Email-launch tests intercept `mailto:` links and inspect their contents without sending email or opening a real mail application. All test data stays in `demo-silverforge` emulators.
 
-Verify the Firebase project is **silverforge-digital** (project number **684696359962**) before deploying rules. This checkout has no `.firebaserc`; explicitly pin the existing project:
+Verify the Firebase project is **silverforge-digital** (project number **684696359962**) before deploying rules. `.firebaserc` now pins this default; continue explicitly selecting the existing project:
 
 ```powershell
 firebase deploy --only firestore:rules --project silverforge-digital --non-interactive
@@ -193,7 +193,13 @@ For the workspace feature alone, deploy no other Firebase services. The push not
 
 The atomic-write design follows Firebase's [transaction guidance](https://firebase.google.com/docs/firestore/manage-data/transactions) and [rule validation using getAfter](https://firebase.google.com/docs/firestore/security/rules-conditions).
 
-## Admin push notifications and PWA
+## Administrator notifications
+
+### SMS notifications
+
+The owner reports the project is now on Blaze. Five new Firebase v2 create triggers send short administrator SMS alerts through Twilio for quotes, contacts, support tickets, customer direct messages and customer support replies. Admin messages are skipped; a durable reservation prevents repeated send attempts. Credentials and both phone numbers are Firebase secrets, with no browser changes. See [SMS setup, deployment, delivery tradeoffs and tests](docs/ADMIN_SMS.md). Real phone delivery remains unverified until secrets are configured and Functions are deployed. The existing FCM/PWA behavior below is retained.
+
+### FCM and PWA
 
 The notification center keeps history, unread badges, category/channel preferences and mark-all-read. Active admins can explicitly enable multiple private devices for Firebase Cloud Messaging and install the branded admin PWA. FCM itself has no message charge, but the secure Cloud Functions sender still requires Blaze. See [the complete setup guide](docs/ADMIN_NOTIFICATIONS.md) for files, schema, strict device rules, public-key setup, exact deployment commands, Android installation and the first live notification checklist. No server credentials belong in browser code.
 

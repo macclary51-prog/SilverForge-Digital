@@ -30,3 +30,7 @@ exports.adminNotifyAccount = trigger('users/{userUid}', 'account');
 exports.adminNotifyRequest = trigger('supportTickets/{ticketId}', 'request');
 exports.adminNotifyClientMessage = trigger('clientConversations/{clientUid}/messages/{messageId}', 'clientMessage');
 exports.adminNotifyRequestReply = trigger('supportTickets/{ticketId}/messages/{messageId}', 'reply');
+
+// SMS is independent of FCM preferences and transport failures.
+const { createSmsTriggers } = require('./sms-triggers');
+Object.assign(exports, createSmsTriggers({ db, project, emulator, log }));

@@ -5,6 +5,7 @@ import { initializeTestEnvironment, assertFails } from '@firebase/rules-unit-tes
 import { collection, doc, getDoc, getDocs, serverTimestamp, setDoc, Timestamp, updateDoc, writeBatch } from 'firebase/firestore';
 import { defaultNotificationSettings } from '../notification-shared.js';
 import { quoteSummary } from '../quote-summary.js';
+import { verifySms } from './sms.integration.mjs';
 const require = createRequire(new URL('../functions/package.json', import.meta.url));
 const { initializeApp, deleteApp } = require('firebase-admin/app');
 const { getFirestore, Timestamp: AdminTimestamp } = require('firebase-admin/firestore');
@@ -118,4 +119,5 @@ try {
   await serverDb.doc('users/notify-admin/notificationDevices/duplicate-token-device').set({token:second.token,enabled:true,updatedAt:AdminTimestamp.fromMillis(0)});
   assert.equal((await store.targets()).length, 2);
   console.log('PASS Multiple enabled devices are targeted; inactive admins, duplicate and invalid tokens are excluded; rotated tokens survive stale failures.');
+  await verifySms({ serverDb, alice, admin, publicDb, eventually });
 } finally { await env.cleanup(); await serverDb.terminate(); await deleteApp(serverApp); const {getApps}=require('firebase-admin/app');for(const app of getApps()){await getFirestore(app).terminate();await deleteApp(app);} }
